@@ -1,0 +1,73 @@
+{
+    "name": "Default",
+    "description": "Default provisioning strategy",
+    "version": "0.0.1",
+    "node": {
+        "image": {
+            "options": [
+                {
+                    "name": "Ubuntu - Latest (64 bit)",
+                    "provider": "SOFTLAYER",
+                    "region": "syd01",
+                    "driver": "SoftLayerNodeDriver"
+                },
+                {
+                    "name": "Ubuntu - Latest",
+                    "provider": "SOFTLAYER",
+                    "region": "syd01",
+                    "driver": "SoftLayerNodeDriver"
+                }
+            ],
+            "pick": "first"
+        },
+        "hardware": {
+            "options": [
+                {
+                    "name": "1 CPU, 1GB ram, 25GB",
+                    "provider": "SOFTLAYER",
+                    "region": "syd01",
+                    "driver": "SoftLayerNodeDriver"
+                },
+                {
+                    "name": "4 CPU, 8GB ram, 100GB",
+                    "provider": "SOFTLAYER",
+                    "region": "syd01",
+                    "driver": "SoftLayerNodeDriver"
+                }
+            ]
+        },
+        "location": {
+            "options": [
+                {
+                    "id": "syd01",
+                    "region": "syd01",
+                    "provider": "SOFTLAYER",
+                    "driver": "SoftLayerNodeDriver"
+                }
+            ]
+        }
+    },
+    "provider": {
+        "options": [
+            {
+                "SOFTLAYER": {
+                    "auth": {
+                        "username": "${env.SL_USER}",
+                        "key": "${env.SL_KEY}"
+                    },
+                    "ssh": {
+                        "public_key_path": "${env.PUBLIC_KEY_PATH}",
+                        "private_key_path": "${env.PRIVATE_KEY_PATH}",
+                        "key_name": "${env.PUBLIC_KEY_NAME}"
+                    },
+                    "driver": "SoftLayerNodeDriver"
+                }
+            }
+        ]
+    },
+    "purpose": [
+        "any-cluster"
+    ],
+    "etcd_server": "http://localhost:2379",
+    "default_pick": "first"
+}

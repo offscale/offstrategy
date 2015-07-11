@@ -1,0 +1,3 @@
+https://github.com/offscale/offutils/archive/master.zip#egg=offutils
+https://github.com/offscale/offutils-strategy-register/archive/master.zip#egg=offutils-strategy-register
+https://github.com/offscale/offconf/archive/master.zip#egg=offconf
