@@ -6,7 +6,7 @@
         "image": {
             "options": [
                 {
-                    "name": "CoreOS-stable-717.1.0",
+                    "name": "CoreOS-stable-835.9.0",
                     "provider": "EC2_AP_SOUTHEAST2",
                     "region": "EC2_AP_SOUTHEAST2",
                     "driver": "EC2APSESydneyNodeDriver"
@@ -28,6 +28,12 @@
                     "provider": "SOFTLAYER",
                     "region": "syd01",
                     "driver": "SoftLayerNodeDriver"
+                },
+                {
+                    "name": "ubuntu/images/ebs/ubuntu-trusty-14.04-amd64-server-20151218",
+                    "provider": "EC2_AP_SOUTHEAST2",
+                    "region": "EC2_AP_SOUTHEAST2",
+                    "driver": "EC2APSESydneyNodeDriver"
                 }
             ],
             "pick": "first"

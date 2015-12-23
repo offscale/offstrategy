@@ -2,7 +2,7 @@
 
 import json
 
-from os import name as os_name
+from os import name as os_name, environ
 from functools import partial
 from itertools import imap, ifilter
 
@@ -19,7 +19,7 @@ from Strategy import Strategy
 
 
 # AWS Certificates are acting up (on Windows), remove this in production:
-if os_name == 'nt':
+if os_name == 'nt' or environ.get('disable_ssl'):
     security.VERIFY_SSL_CERT = False
 
 
@@ -52,12 +52,15 @@ class Compute(object):
             getattr(Provider, self.provider_name)
         )(self.provider_dict['auth']['username'], self.provider_dict['auth']['key'])
 
+        if 'http_proxy' in environ:
+            self.provider_cls.connection.set_http_proxy(proxy_url=environ['http_proxy'])
+
         # pp(map(obj_to_d, self.list_sizes()))
         get_option = partial(self.strategy.get_option, provider_name=self.provider_name)
 
         '''
         pp(map(node_to_dict,
-               ifilter(lambda image: image and image.id in ('ami-19f4b023',), self.list_images())))
+               ifilter(lambda image: image and image.id in ('ami-90bfe4f3', 'ami-ffaef69c'), self.list_images())))
         '''
 
         self.node_specs = {

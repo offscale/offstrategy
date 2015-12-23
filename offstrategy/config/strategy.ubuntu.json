@@ -33,6 +33,12 @@
                     "provider": "SOFTLAYER",
                     "region": "syd01",
                     "driver": "SoftLayerNodeDriver"
+                },
+                {
+                    "name": "8 CPU, 16GB ram, 100GB",
+                    "provider": "SOFTLAYER",
+                    "region": "syd01",
+                    "driver": "SoftLayerNodeDriver"
                 }
             ]
         },

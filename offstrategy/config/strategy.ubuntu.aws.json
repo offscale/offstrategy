@@ -6,7 +6,7 @@
         "image": {
             "options": [
                 {
-                    "name": "ubuntu/images-testing/ebs/ubuntu-trusty-daily-amd64-server-20150708",
+                    "name": "ubuntu/images/ebs/ubuntu-trusty-14.04-amd64-server-20151218",
                     "provider": "EC2_AP_SOUTHEAST2",
                     "region": "EC2_AP_SOUTHEAST2",
                     "driver": "EC2APSESydneyNodeDriver"
