@@ -1,13 +1,15 @@
 {
     "name": "Default",
     "description": "AWS ubuntu provisioning strategy",
-    "version": "0.0.2",
+    "version": "0.0.1",
     "node": {
         "image": {
             "options": [
                 {
-                    "image": "ami-c01a3ca3",
-                    "provider": "EC2_AP_SOUTHEAST2"
+                    "name": "ubuntu/images-testing/ebs/ubuntu-trusty-daily-amd64-server-20160206",
+                    "provider": "EC2_AP_SOUTHEAST2",
+                    "region": "EC2_AP_SOUTHEAST2",
+                    "driver": "EC2APSESydneyNodeDriver"
                 }
             ],
             "pick": "first"
@@ -15,8 +17,8 @@
         "hardware": {
             "options": [
                 {
-                    "id": "t1.micro",
-                    "name": "Micro Instance",
+                    "id": "m4.xlarge",
+                    "name": "Extra Large Instance",
                     "provider": "EC2_AP_SOUTHEAST2",
                     "region": "EC2_AP_SOUTHEAST2",
                     "driver": "EC2APSESydneyNodeDriver"

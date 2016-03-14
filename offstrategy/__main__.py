@@ -3,8 +3,6 @@ from functools import partial
 from argparse import ArgumentParser
 from multiprocessing import Pool
 
-from offutils import ping_port
-
 from __init__ import logger
 from Compute import Compute
 
@@ -25,11 +23,16 @@ def _build_parser():
 if __name__ == '__main__':
     args = _build_parser().parse_args()
 
+
     def one(*ignore):
         compute = Compute(args.strategy)
-        logger.info(compute.attempt_provision('create', prefer_provider=args.provider, prefer_image=args.image))
+        logger.info(compute.attempt_provision('create',
+                                              prefer_provider=args.provider,
+                                              prefer_image=args.image))
 
-    print 'args.number_of_nodes =', args.number_of_nodes
+
+    logger.info(('Provisioning {} node'.format(args.number_of_nodes) +
+                 's' if args.number_of_nodes > 1 else ''))
     if args.number_of_nodes == 1:
         one()
     else:
