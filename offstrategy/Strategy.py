@@ -2,6 +2,7 @@ from random import randint
 from uuid import uuid4
 from json import loads
 from types import DictType
+from string import ascii_letters
 
 from libcloud.compute.base import NodeImage
 
@@ -21,12 +22,15 @@ class Strategy(object):
 
     def get_node_name(self, image_name=None):
         if type(self.image) is DictType:
-            image_name = image_name or self.image['name']
+            image_name = (
+                lambda n: ''.join(ch for ch in n if ch in ascii_letters)
+                if self.image['driver'].__name__.startswith('Azure') else n
+            )(image_name or self.image['name'])
         elif isinstance(self.image, NodeImage):
             image_name = image_name or self.image.name
         return '{purpose}-{image}-{uuid}'.format(
             purpose='-'.join(self.strategy['purpose']),
-            image=image_name.encode('string-escape'),
+            image=image_name.encode('string-escape' if isinstance(image_name, str) else 'unicode-escape'),
             uuid=uuid4().get_hex()
         ).replace('/', '.').replace(' ', '')
 
@@ -39,7 +43,9 @@ class Strategy(object):
 
     @staticmethod
     def get_hardware(enumerable, options):
-        return next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
+        h = next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
+        return h if h else next(
+            lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options), None)
 
     def get_image(self, enumerable, options):
         for option in options:
@@ -48,7 +54,8 @@ class Strategy(object):
                               None)
             if self.image:
                 return self.image
-        self.image = next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
+        i = next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
+        self.image = i if i else next(lists_of_dicts_intersection_on(('id', 'name'), enumerable, options), None)
         return self.image
 
     def get_option(self, name, enumerable, provider_name):

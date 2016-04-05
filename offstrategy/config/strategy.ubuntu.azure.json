@@ -1,0 +1,71 @@
+{
+  "name": "Azure Ubuntu 14.04",
+  "description": "Microsoft Azure Ubuntu 14.04 LTS",
+  "version": "0.0.1",
+  "node": {
+    "image": {
+      "options": [
+        {
+          "id": "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04_4-LTS-amd64-server-20160314-en-us-30GB",
+          "name": "Ubuntu Server 14.04.4-LTS",
+          "provider": "AZURE"
+        }
+      ],
+      "pick": "first"
+    },
+    "hardware": {
+      "options": [
+        {
+          "ram": 7168,
+          "name": "D2 Faster Compute Instance",
+          "extra": {
+            "cores": 2,
+            "max_data_disks": 4
+          },
+          "price": "0.1983",
+          "_uuid": "f4518d25ef077fc7a7b2f64490b6de983db0d7d8",
+          "driver": "libcloud.compute.drivers.azure.AzureNodeDriver",
+          "disk": 127,
+          "id": "Standard_D2",
+          "uuid": "f4518d25ef077fc7a7b2f64490b6de983db0d7d8",
+          "provider": "AZURE"
+        }
+      ]
+    },
+    "location": {
+      "options": [
+        {
+          "name": "Australia East",
+          "country": "Australia East",
+          "driver": "AzureNodeDriver",
+          "id": "Australia East",
+          "provider": "AZURE"
+        }
+      ]
+    }
+  },
+  "provider": {
+    "options": [
+      {
+        "AZURE": {
+          "auth": {
+            "subscription_id": "${env.AZURE_SUBSCRIPTION}",
+            "key_file": "${env.AZURE_KEY_FILE}"
+          },
+          "ssh": {
+            "public_key_path": "${env.PUBLIC_KEY_PATH}",
+            "private_key_path": "${env.PRIVATE_KEY_PATH}",
+            "key_name": "${env.PUBLIC_KEY_NAME}",
+            "node_password": "${env.AZURE_NODE_PASSWORD}"
+          },
+          "driver": "AZURE"
+        }
+      }
+    ]
+  },
+  "purpose": [
+    "any-cluster"
+  ],
+  "etcd_server": "http://localhost:2379",
+  "default_pick": "first"
+}

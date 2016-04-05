@@ -6,6 +6,7 @@ from os import name as os_name, environ
 from functools import partial
 from itertools import imap, ifilter
 
+from libcloud.compute.base import NodeAuthPassword
 from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud import security
@@ -16,7 +17,6 @@ from offutils import obj_to_d, pp, ping_port
 
 from __init__ import logger
 from Strategy import Strategy
-
 
 # AWS Certificates are acting up (on Windows), remove this in production:
 if os_name == 'nt' or environ.get('disable_ssl'):
@@ -50,7 +50,15 @@ class Compute(object):
 
         self.provider_cls = get_driver(
             getattr(Provider, self.provider_name)
-        )(self.provider_dict['auth']['username'], self.provider_dict['auth']['key'])
+        )
+
+        self.provider_cls = self.provider_cls(
+            subscription_id=self.provider_dict['auth']['subscription_id'],
+            key_file=self.provider_dict['auth']['key_file']
+        ) if self.provider_name == 'AZURE' else self.provider_cls(
+            self.provider_dict['auth']['username'],
+            self.provider_dict['auth']['key']
+        )
 
         if 'http_proxy' in environ:
             self.provider_cls.connection.set_http_proxy(proxy_url=environ['http_proxy'])
@@ -68,6 +76,16 @@ class Compute(object):
             'image': get_option('image', self.list_images()),
             'location': get_option('location', self.list_locations())
         }
+        if self.provider_name == 'AZURE':
+            if 'AZURE_CLOUD_NAME' not in environ:
+                raise KeyError('$AZURE_CLOUD_NAME needs to be defined. '
+                               'See: http://libcloud.readthedocs.org/en/latest/compute/drivers/azure.html'
+                               '#libcloud.compute.drivers.azure.AzureNodeDriver.create_node')
+
+            self.node_specs.update({
+                'ex_cloud_service_name': environ['AZURE_CLOUD_NAME'],
+                'auth': NodeAuthPassword(self.provider_dict['ssh']['node_password'])
+            })
 
         pp({self.provider_name: self.node_specs})
         if 'security_group' in self.provider_dict:
@@ -85,6 +103,9 @@ class Compute(object):
                 name=self.provider_dict['ssh']['key_name'],
                 key_file_path=self.provider_dict['ssh']['public_key_path']
             )
+        except NotImplementedError:
+            logger.warn('`import_key_pair_from_file` not implemented for {}'.format(self.provider_name))
+            pass  # DW about it
         except Exception as e:
             if not e.message.startswith('InvalidKeyPair.Duplicate'):
                 raise e
@@ -137,8 +158,8 @@ class Compute(object):
 
         if create_or_deploy == 'deploy':
             with open(self.provider_dict['ssh']['public_key_path'], mode='rt') as f:
-                ssh_key = f.read()
-            self.node_specs.update({'deploy': SSHKeyDeployment(ssh_key)})
+                public_ssh_key = f.read()
+            self.node_specs.update({'deploy': SSHKeyDeployment(public_ssh_key)})
 
         self.node_name = self.strategy.get_node_name()
         try:
