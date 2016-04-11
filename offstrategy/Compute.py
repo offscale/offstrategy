@@ -18,8 +18,7 @@ from offutils import obj_to_d, pp, ping_port
 from __init__ import logger
 from Strategy import Strategy
 
-# AWS Certificates are acting up (on Windows), remove this in production:
-if os_name == 'nt' or environ.get('disable_ssl'):
+if environ.get('disable_ssl'):
     security.VERIFY_SSL_CERT = False
 
 
@@ -44,39 +43,37 @@ class Compute(object):
         return getattr(self.provider_cls, attr)
 
     def set_node(self):
-        self.provider_name, self.provider_dict = (
-            lambda _provider_obj: (lambda name: (name, _provider_obj[name]))(_provider_obj.keys()[0])
-        )(self.strategy.get_provider(self.offset))
-
-        self.provider_cls = get_driver(
-            getattr(Provider, self.provider_name)
-        )
+        self.provider_dict = self.strategy.get_provider(self.offset)
+        self.provider_cls = get_driver(getattr(Provider, self.provider_dict['provider']['name']))
 
         self.provider_cls = self.provider_cls(
             subscription_id=self.provider_dict['auth']['subscription_id'],
             key_file=self.provider_dict['auth']['key_file']
-        ) if self.provider_name == 'AZURE' else self.provider_cls(
+        ) if self.provider_dict['provider']['name'] == 'AZURE' else self.provider_cls(
             self.provider_dict['auth']['username'],
-            self.provider_dict['auth']['key']
+            self.provider_dict['auth']['key'],
+            region=self.provider_dict['provider']['region']
         )
 
         if 'http_proxy' in environ:
             self.provider_cls.connection.set_http_proxy(proxy_url=environ['http_proxy'])
 
         # pp(map(obj_to_d, self.list_sizes()))
-        get_option = partial(self.strategy.get_option, provider_name=self.provider_name)
+        get_option = partial(self.strategy.get_option,
+                             provider_name=self.provider_dict['provider']['name'])
 
         '''
         pp(map(node_to_dict,
                ifilter(lambda image: image and image.id in ('ami-90bfe4f3', 'ami-ffaef69c'), self.list_images())))
         '''
 
+        get_option('location', self.list_locations())
         self.node_specs = {
             'size': get_option('hardware', self.list_sizes()),
             'image': get_option('image', self.list_images()),
             'location': get_option('location', self.list_locations())
         }
-        if self.provider_name == 'AZURE':
+        if self.provider_dict['provider']['name'] == 'AZURE':
             if 'AZURE_CLOUD_NAME' not in environ:
                 raise KeyError('$AZURE_CLOUD_NAME needs to be defined. '
                                'See: http://libcloud.readthedocs.org/en/latest/compute/drivers/azure.html'
@@ -87,7 +84,7 @@ class Compute(object):
                 'auth': NodeAuthPassword(self.provider_dict['ssh']['node_password'])
             })
 
-        pp({self.provider_name: self.node_specs})
+        pp({self.provider_dict['provider']['name']: self.node_specs})
         if 'security_group' in self.provider_dict:
             self.node_specs.update({'ex_securitygroup': self.provider_dict['security_group']})
         if 'key_name' in self.provider_dict:
@@ -104,7 +101,8 @@ class Compute(object):
                 key_file_path=self.provider_dict['ssh']['public_key_path']
             )
         except NotImplementedError:
-            logger.warn('`import_key_pair_from_file` not implemented for {}'.format(self.provider_name))
+            logger.warn(
+                '`import_key_pair_from_file` not implemented for {}'.format(self.provider_dict['provider']['name']))
             pass  # DW about it
         except Exception as e:
             if not e.message.startswith('InvalidKeyPair.Duplicate'):
@@ -136,7 +134,7 @@ class Compute(object):
             '''
         for i in xrange(len(self.strategy.strategy['provider']['options'])):  # Threshold
             logger.info('Attempting to create node "{node_name}" on: {provider}'.format(
-                node_name=self.strategy.get_node_name(), provider=self.provider_name
+                node_name=self.strategy.get_node_name(), provider=self.provider_dict['provider']['name']
             ))
             self.provision(create_or_deploy)
 
@@ -153,7 +151,7 @@ class Compute(object):
         except LibcloudError as e:
             logger.warn('{cls}: {msg}'.format(cls=e.__class__.__name__, msg=e.message))
 
-        if 'ex_securitygroup' in self.node_specs and self.provider_name.startswith('EC2'):
+        if 'ex_securitygroup' in self.node_specs and self.provider_dict['provider']['name'].startswith('EC2'):
             print self.node_specs['ex_securitygroup']
 
         if create_or_deploy == 'deploy':

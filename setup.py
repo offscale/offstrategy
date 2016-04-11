@@ -29,7 +29,7 @@ if __name__ == '__main__':
         test_suite=package_name + '.tests',
         packages=find_packages(),
         package_dir={package_name: package_name},
-        install_requires=['apache-libcloud', 'python-etcd'],
+        install_requires=['apache-libcloud==1.0.0-rc2', 'python-etcd'],
         data_files=[
             (config_install_dir, [config_join('strategy.sample.json')]),
             (_data_install_dir, [_data_join('logging.yml')])

@@ -1,64 +1,74 @@
 {
-    "name": "Default",
-    "description": "AWS ubuntu provisioning strategy",
-    "version": "0.0.2",
-    "node": {
-        "image": {
-            "options": [
-                {
-                    "image": "ami-c01a3ca3",
-                    "provider": "EC2_AP_SOUTHEAST2"
-                }
-            ],
-            "pick": "first"
-        },
-        "hardware": {
-            "options": [
-                {
-                    "id": "t1.micro",
-                    "name": "Micro Instance",
-                    "provider": "EC2_AP_SOUTHEAST2",
-                    "region": "EC2_AP_SOUTHEAST2",
-                    "driver": "EC2APSESydneyNodeDriver"
-                }
-            ]
-        },
-        "location": {
-            "options": [
-                {
-                    "id": "0",
-                    "region": "ap-southeast-2a",
-                    "provider": "EC2_AP_SOUTHEAST2",
-                    "driver": "EC2APSESydneyNodeDriver"
-                }
-            ]
+  "name": "Default",
+  "description": "AWS ubuntu provisioning strategy",
+  "version": "0.0.2",
+  "node": {
+    "image": {
+      "options": [
+        {
+          "id": "ami-31654752",
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
         }
+      ],
+      "pick": "first"
     },
-    "provider": {
-        "options": [
-            {
-                "EC2_AP_SOUTHEAST2": {
-                    "auth": {
-                        "username": "${env.AWS_KEY_ID}",
-                        "key": "${env.AWS_ACCESS_KEY}"
-                    },
-                    "ssh": {
-                        "public_key_path": "${env.PUBLIC_KEY_PATH}",
-                        "private_key_path": "${env.PRIVATE_KEY_PATH}",
-                        "key_name": "${env.PUBLIC_KEY_NAME}"
-                    },
-                    "security_group": [
-                        "all"
-                    ],
-                    "driver": "EC2APSESydneyNodeDriver",
-                    "key_name": "${env.PUBLIC_KEY_NAME}"
-                }
+    "hardware": {
+      "options": [
+        {
+          "id": "t1.micro",
+          "name": "Micro Instance",
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
+        }
+      ]
+    },
+    "location": {
+      "options": [
+        {
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2",
+            "availability_zone": {
+              "name": "ap-southeast-2a",
+              "zone_state": "available",
+              "region_name": "ap-southeast-2"
             }
-        ]
-    },
-    "purpose": [
-        "any-cluster"
-    ],
-    "etcd_server": "http://localhost:2379",
-    "default_pick": "first"
+          }
+        }
+      ]
+    }
+  },
+  "provider": {
+    "options": [
+      {
+        "provider": {
+          "name": "EC2",
+          "region": "ap-southeast-2"
+        },
+        "auth": {
+          "username": "${env.AWS_KEY_ID}",
+          "key": "${env.AWS_ACCESS_KEY}"
+        },
+        "ssh": {
+          "public_key_path": "${env.PUBLIC_KEY_PATH}",
+          "private_key_path": "${env.PRIVATE_KEY_PATH}",
+          "key_name": "${env.PUBLIC_KEY_NAME}"
+        },
+        "security_group": [
+          "all"
+        ],
+        "key_name": "${env.PUBLIC_KEY_NAME}"
+      }
+    ]
+  },
+  "purpose": [
+    "any-cluster"
+  ],
+  "etcd_server": "http://localhost:2379",
+  "default_pick": "first"
 }

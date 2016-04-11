@@ -6,9 +6,9 @@ from string import ascii_letters
 
 from libcloud.compute.base import NodeImage
 
-from offutils_strategy_register import dict_to_node, node_to_dict
+from offutils_strategy_register import dict_to_node, node_to_dict, normal_types, dict_to_cls
 from offconf import replace_variables
-from offutils import raise_f, find_by_key, obj_to_d, pp, lists_of_dicts_intersection_on, l_of_d_intersection
+from offutils import raise_f, find_by_key, obj_to_d, pp, lists_of_dicts_intersection_on, l_of_d_intersection, update_d
 
 
 class Strategy(object):
@@ -37,25 +37,40 @@ class Strategy(object):
     def get_provider(self, offset=0):
         return self._get_next_option(self.strategy['provider'], offset)
 
-    @staticmethod
-    def get_location(enumerable, options):
-        return next(lists_of_dicts_intersection_on(('driver', 'id'), enumerable, options), None)
+    def get_location(self, enumerable, options):
+        options0 = options or self.strategy['node']['location']['options']
+        options1 = filter(None, map(
+            lambda provider_dict: {'name': provider_dict['provider']['region'],
+                                   'region_name': provider_dict['provider']['region'],
+                                   'availability_zone': provider_dict['provider'].get('availability_zone')
+                                   } if 'region' in provider_dict.get('provider', frozenset()) else None,
+            options0))
 
-    @staticmethod
-    def get_hardware(enumerable, options):
-        h = next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
-        return h if h else next(
-            lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options), None)
+        for options in (options0, options1):
+            r = next(lists_of_dicts_intersection_on(('driver', 'id'), enumerable, options),
+                     next(lists_of_dicts_intersection_on(('name',), enumerable, options),
+                          next(lists_of_dicts_intersection_on(('availability_zone',), enumerable, options),
+                               next(
+                                   lists_of_dicts_intersection_on(
+                                       ('name',), enumerable,
+                                       [next(lists_of_dicts_intersection_on(
+                                           ('availability_zone',),
+                                           map(node_to_dict, enumerable), options1),
+                                           None)]), None))))
+            if r:
+                return r
+
+    def get_hardware(self, enumerable, options):
+        options = options or self.strategy['node']['hardware']['options']
+        return next(
+            lists_of_dicts_intersection_on(('id',), enumerable, options),
+            next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options),
+                 next(lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options), None)))
 
     def get_image(self, enumerable, options):
-        for option in options:
-            self.image = next((image for image in enumerable
-                               if 'name' not in option and 'image' in option and image.id == option['image']),
-                              None)
-            if self.image:
-                return self.image
-        i = next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options), None)
-        self.image = i if i else next(lists_of_dicts_intersection_on(('id', 'name'), enumerable, options), None)
+        options = options or self.strategy['node']['image']['options']
+        self.image = next(lists_of_dicts_intersection_on(('id',), enumerable, options),
+                          next(lists_of_dicts_intersection_on(('name',), enumerable, options), None))
         return self.image
 
     def get_option(self, name, enumerable, provider_name):
