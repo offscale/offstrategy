@@ -8,7 +8,10 @@
         {
           "id": "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04_4-LTS-amd64-server-20160314-en-us-30GB",
           "name": "Ubuntu Server 14.04.4-LTS",
-          "provider": "AZURE"
+          "provider": {
+            "name": "AZURE",
+            "region": "Australia East"
+          }
         }
       ],
       "pick": "first"
@@ -28,18 +31,21 @@
           "disk": 127,
           "id": "Standard_D2",
           "uuid": "f4518d25ef077fc7a7b2f64490b6de983db0d7d8",
-          "provider": "AZURE"
+          "provider": {
+            "name": "AZURE",
+            "region": "Australia East"
+          }
         }
       ]
     },
     "location": {
       "options": [
         {
-          "name": "Australia East",
-          "country": "Australia East",
-          "driver": "AzureNodeDriver",
-          "id": "Australia East",
-          "provider": "AZURE"
+          "provider": {
+            "name": "AZURE",
+            "id": "Australia East",
+            "region": "Australia East"
+          }
         }
       ]
     }
@@ -47,18 +53,19 @@
   "provider": {
     "options": [
       {
-        "AZURE": {
-          "auth": {
-            "subscription_id": "${env.AZURE_SUBSCRIPTION}",
-            "key_file": "${env.AZURE_KEY_FILE}"
-          },
-          "ssh": {
-            "public_key_path": "${env.PUBLIC_KEY_PATH}",
-            "private_key_path": "${env.PRIVATE_KEY_PATH}",
-            "key_name": "${env.PUBLIC_KEY_NAME}",
-            "node_password": "${env.AZURE_NODE_PASSWORD}"
-          },
-          "driver": "AZURE"
+        "auth": {
+          "subscription_id": "${env.AZURE_SUBSCRIPTION}",
+          "key_file": "${env.AZURE_KEY_FILE}"
+        },
+        "ssh": {
+          "public_key_path": "${env.PUBLIC_KEY_PATH}",
+          "private_key_path": "${env.PRIVATE_KEY_PATH}",
+          "key_name": "${env.PUBLIC_KEY_NAME}",
+          "node_password": "${env.AZURE_NODE_PASSWORD}"
+        },
+        "provider": {
+          "name": "AZURE",
+          "region": "Australia East"
         }
       }
     ]

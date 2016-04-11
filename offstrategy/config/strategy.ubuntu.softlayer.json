@@ -25,13 +25,6 @@
             "name": "SOFTLAYER",
             "region": "syd01"
           }
-        },
-        {
-          "id": "ami-31654752",
-          "provider": {
-            "name": "EC2",
-            "region": "ap-southeast-2"
-          }
         }
       ],
       "pick": "first"
@@ -43,14 +36,6 @@
           "provider": {
             "name": "SOFTLAYER",
             "region": "syd01"
-          }
-        },
-        {
-          "id": "t1.micro",
-          "name": "Micro Instance",
-          "provider": {
-            "name": "EC2",
-            "region": "ap-southeast-2"
           }
         },
         {
@@ -70,42 +55,12 @@
             "name": "SOFTLAYER",
             "region": "syd01"
           }
-        },
-        {
-          "provider": {
-            "name": "EC2",
-            "region": "ap-southeast-2",
-            "availability_zone": {
-              "name": "ap-southeast-2a",
-              "zone_state": "available",
-              "region_name": "ap-southeast-2"
-            }
-          }
         }
       ]
     }
   },
   "provider": {
     "options": [
-      {
-        "provider": {
-          "name": "EC2",
-          "region": "ap-southeast-2"
-        },
-        "auth": {
-          "username": "${env.AWS_KEY_ID}",
-          "key": "${env.AWS_ACCESS_KEY}"
-        },
-        "ssh": {
-          "public_key_path": "${env.PUBLIC_KEY_PATH}",
-          "private_key_path": "${env.PRIVATE_KEY_PATH}",
-          "key_name": "${env.PUBLIC_KEY_NAME}"
-        },
-        "security_group": [
-          "all"
-        ],
-        "key_name": "${env.PUBLIC_KEY_NAME}"
-      },
       {
         "auth": {
           "username": "${env.SL_USER}",

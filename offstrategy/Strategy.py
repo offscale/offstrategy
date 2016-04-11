@@ -65,7 +65,8 @@ class Strategy(object):
         return next(
             lists_of_dicts_intersection_on(('id',), enumerable, options),
             next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options),
-                 next(lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options), None)))
+                 next(lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options),
+                      next(lists_of_dicts_intersection_on(('name',), enumerable, options), None))))
 
     def get_image(self, enumerable, options):
         options = options or self.strategy['node']['image']['options']
