@@ -44,16 +44,15 @@ class Compute(object):
 
     def set_node(self):
         self.provider_dict = self.strategy.get_provider(self.offset)
-        self.provider_cls = get_driver(getattr(Provider, self.provider_dict['provider']['name']))
 
-        self.provider_cls = self.provider_cls(
+        self.provider_cls = (lambda driver: driver(
             subscription_id=self.provider_dict['auth']['subscription_id'],
             key_file=self.provider_dict['auth']['key_file']
-        ) if self.provider_dict['provider']['name'] == 'AZURE' else self.provider_cls(
+        ) if self.provider_dict['provider']['name'] == 'AZURE' else driver(
             self.provider_dict['auth']['username'],
             self.provider_dict['auth']['key'],
             region=self.provider_dict['provider']['region']
-        )
+        ))(get_driver(getattr(Provider, self.provider_dict['provider']['name'])))
 
         if 'http_proxy' in environ:
             self.provider_cls.connection.set_http_proxy(proxy_url=environ['http_proxy'])
