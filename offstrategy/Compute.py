@@ -46,12 +46,8 @@ class Compute(object):
         self.provider_dict = self.strategy.get_provider(self.offset)
 
         self.provider_cls = (lambda driver: driver(
-            subscription_id=self.provider_dict['auth']['subscription_id'],
-            key_file=self.provider_dict['auth']['key_file']
-        ) if self.provider_dict['provider']['name'] == 'AZURE' else driver(
-            self.provider_dict['auth']['username'],
-            self.provider_dict['auth']['key'],
-            region=self.provider_dict['provider']['region']
+            region=self.provider_dict['provider']['region'],
+            **self.provider_dict['auth']
         ))(get_driver(getattr(Provider, self.provider_dict['provider']['name'])))
 
         if 'http_proxy' in environ:
@@ -66,12 +62,12 @@ class Compute(object):
                ifilter(lambda image: image and image.id in ('ami-90bfe4f3', 'ami-ffaef69c'), self.list_images())))
         '''
 
-        get_option('location', self.list_locations())
         self.node_specs = {
             'size': get_option('hardware', self.list_sizes()),
             'image': get_option('image', self.list_images()),
             'location': get_option('location', self.list_locations())
         }
+
         if self.provider_dict['provider']['name'] == 'AZURE':
             if 'AZURE_CLOUD_NAME' not in environ:
                 raise KeyError('$AZURE_CLOUD_NAME needs to be defined. '
@@ -84,6 +80,7 @@ class Compute(object):
             })
 
         pp({self.provider_dict['provider']['name']: self.node_specs})
+
         if 'security_group' in self.provider_dict:
             self.node_specs.update({'ex_securitygroup': self.provider_dict['security_group']})
         if 'key_name' in self.provider_dict:

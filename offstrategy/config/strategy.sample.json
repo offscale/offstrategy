@@ -32,6 +32,14 @@
             "name": "EC2",
             "region": "ap-southeast-2"
           }
+        },
+        {
+          "id": "17154032",
+          "name": "14.04.4 x64",
+          "provider": {
+            "name": "DIGITAL_OCEAN",
+            "region": "sgp1"
+          }
         }
       ],
       "pick": "first"
@@ -59,6 +67,15 @@
             "name": "SOFTLAYER",
             "region": "syd01"
           }
+        },
+        {
+          "name": "2gb",
+          "ram": 2048,
+          "disk": 40,
+          "provider": {
+            "name": "DIGITAL_OCEAN",
+            "region": "sgp1"
+          }
         }
       ]
     },
@@ -81,6 +98,13 @@
               "region_name": "ap-southeast-2"
             }
           }
+        },
+        {
+          "provider": {
+            "id": "sgp1",
+            "name": "DIGITAL_OCEAN",
+            "region": "Singapore 1"
+          }
         }
       ]
     }
@@ -93,8 +117,8 @@
           "region": "ap-southeast-2"
         },
         "auth": {
-          "username": "${env.AWS_KEY_ID}",
-          "key": "${env.AWS_ACCESS_KEY}"
+          "key": "${env.AWS_KEY_ID}",
+          "secret": "${env.AWS_ACCESS_KEY}"
         },
         "ssh": {
           "public_key_path": "${env.PUBLIC_KEY_PATH}",
@@ -107,18 +131,32 @@
         "key_name": "${env.PUBLIC_KEY_NAME}"
       },
       {
+        "provider": {
+          "name": "SOFTLAYER",
+          "region": "syd01"
+        },
         "auth": {
-          "username": "${env.SL_USER}",
-          "key": "${env.SL_KEY}"
+          "key": "${env.SL_USER}",
+          "secret": "${env.SL_KEY}"
         },
         "ssh": {
           "public_key_path": "${env.PUBLIC_KEY_PATH}",
           "private_key_path": "${env.PRIVATE_KEY_PATH}",
           "key_name": "${env.PUBLIC_KEY_NAME}"
-        },
+        }
+      },
+      {
         "provider": {
-          "name": "SOFTLAYER",
-          "region": "syd01"
+          "name": "DIGITAL_OCEAN",
+          "region": "sgp1"
+        },
+        "auth": {
+          "key": "${env.DIGITAL_OCEAN_KEY}"
+        },
+        "ssh": {
+          "public_key_path": "${env.PUBLIC_KEY_PATH}",
+          "private_key_path": "${env.PRIVATE_KEY_PATH}",
+          "key_name": "${env.PUBLIC_KEY_NAME}"
         }
       }
     ]

@@ -63,8 +63,8 @@
     "options": [
       {
         "auth": {
-          "username": "${env.SL_USER}",
-          "key": "${env.SL_KEY}"
+          "key": "${env.SL_USER}",
+          "secret": "${env.SL_KEY}"
         },
         "ssh": {
           "public_key_path": "${env.PUBLIC_KEY_PATH}",
