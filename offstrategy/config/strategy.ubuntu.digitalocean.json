@@ -52,6 +52,13 @@
           "private_key_path": "${env.PRIVATE_KEY_PATH}",
           "key_name": "${env.PUBLIC_KEY_NAME}"
         },
+        "create_with": {
+          "ex_create_attr": {
+            "ssh_keys": [
+              "${env.SSH_KEY_FINGERPRINT}"
+            ]
+          }
+        },
         "provider": {
           "name": "DIGITAL_OCEAN",
           "region": "sgp1"

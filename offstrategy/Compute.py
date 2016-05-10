@@ -68,14 +68,11 @@ class Compute(object):
             'location': get_option('location', self.list_locations())
         }
 
-        if self.provider_dict['provider']['name'] == 'AZURE':
-            if 'AZURE_CLOUD_NAME' not in environ:
-                raise KeyError('$AZURE_CLOUD_NAME needs to be defined. '
-                               'See: http://libcloud.readthedocs.org/en/latest/compute/drivers/azure.html'
-                               '#libcloud.compute.drivers.azure.AzureNodeDriver.create_node')
+        if 'create_with' in self.provider_dict:
+            self.node_specs.update(self.provider_dict['create_with'])
 
+        if 'node_password' in self.provider_dict['ssh']:
             self.node_specs.update({
-                'ex_cloud_service_name': environ['AZURE_CLOUD_NAME'],
                 'auth': NodeAuthPassword(self.provider_dict['ssh']['node_password'])
             })
 

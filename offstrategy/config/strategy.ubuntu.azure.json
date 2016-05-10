@@ -63,6 +63,9 @@
           "key_name": "${env.PUBLIC_KEY_NAME}",
           "node_password": "${env.AZURE_NODE_PASSWORD}"
         },
+        "create_with": {
+          "ex_cloud_service_name": "${env.AZURE_CLOUD_NAME}"
+        },
         "provider": {
           "name": "AZURE",
           "region": "Australia East"

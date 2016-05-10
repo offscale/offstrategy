@@ -6,9 +6,9 @@ from string import ascii_letters
 
 from libcloud.compute.base import NodeImage
 
-from offutils_strategy_register import dict_to_node, node_to_dict, normal_types, dict_to_cls
+from offutils_strategy_register import dict_to_node, node_to_dict
 from offconf import replace_variables
-from offutils import raise_f, find_by_key, obj_to_d, pp, lists_of_dicts_intersection_on, l_of_d_intersection, update_d
+from offutils import raise_f, find_by_key, pp, lists_of_dicts_intersection_on, lists_of_dicts_intersection_on_any
 
 
 class Strategy(object):
@@ -37,47 +37,43 @@ class Strategy(object):
     def get_provider(self, offset=0):
         return self._get_next_option(self.strategy['provider'], offset)
 
-    def get_location(self, enumerable, options):
-        options0 = options or self.strategy['node']['location']['options']
+    @staticmethod
+    def get_location(enumerable, options):
         options1 = filter(None, map(
             lambda provider_dict: {'name': provider_dict['provider']['region'],
                                    'region_name': provider_dict['provider']['region'],
                                    'availability_zone': provider_dict['provider'].get('availability_zone')
                                    } if 'region' in provider_dict.get('provider', frozenset()) else None,
-            options0))
+            options))
 
-        for options in (options0, options1):
-            r = next(lists_of_dicts_intersection_on(('driver', 'id'), enumerable, options),
-                     next(lists_of_dicts_intersection_on(('name',), enumerable, options),
-                          next(lists_of_dicts_intersection_on(('availability_zone',), enumerable, options),
-                               next(
-                                   lists_of_dicts_intersection_on(
-                                       ('name',), enumerable,
-                                       [next(lists_of_dicts_intersection_on(
-                                           ('availability_zone',),
-                                           map(node_to_dict, enumerable), options1),
-                                           None)]), None))))
+        for options in (options, options1):
+            r = next(lists_of_dicts_intersection_on_any((('driver', 'id'), ('name',), ('availability_zone',)),
+                                                        enumerable, options),
+                     next(lists_of_dicts_intersection_on(
+                         ('name',), enumerable,
+                         [next(lists_of_dicts_intersection_on(('availability_zone',),
+                                                              map(node_to_dict, enumerable), options1),
+                               None)
+                          ]), None)
+                     )
             if r:
                 return r
 
-    def get_hardware(self, enumerable, options):
-        options = options or self.strategy['node']['hardware']['options']
-        return next(
-            lists_of_dicts_intersection_on(('id',), enumerable, options),
-            next(lists_of_dicts_intersection_on(('driver', 'name'), enumerable, options),
-                 next(lists_of_dicts_intersection_on(('ram', 'name', 'disk'), enumerable, options),
-                      next(lists_of_dicts_intersection_on(('name',), enumerable, options), None))))
+    @staticmethod
+    def get_hardware(enumerable, options):
+        return next(lists_of_dicts_intersection_on_any(
+            (('id',), ('driver', 'name'), ('ram', 'name', 'disk'), ('name',)),
+            enumerable, options), None
+        )
 
     def get_image(self, enumerable, options):
-        options = options or self.strategy['node']['image']['options']
-        self.image = next(lists_of_dicts_intersection_on(('id',), enumerable, options),
-                          next(lists_of_dicts_intersection_on(('name',), enumerable, options), None))
+        self.image = next(lists_of_dicts_intersection_on_any((('id',), ('name',)), enumerable, options), None)
         return self.image
 
     def get_option(self, name, enumerable, provider_name):
         result = getattr(self, 'get_{name}'.format(name=name))(
             enumerable,
-            filter(lambda opt: opt['provider'] == provider_name,
+            filter(lambda opt: opt['provider']['name'] == provider_name,
                    find_by_key(self.strategy, name)['options'])
         )
         if result:
@@ -98,7 +94,3 @@ class Strategy(object):
         'first': 0,
         'random': randint(0, length)
     }[algorithm] if length else raise_f(ValueError, '`_pick` performed on empty list')
-
-
-if __name__ == '__main__':
-    pass
