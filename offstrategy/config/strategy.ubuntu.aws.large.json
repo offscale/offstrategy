@@ -5,11 +5,12 @@
   "node": {
     "image": {
       "options": [
-        {
-          "name": "ubuntu/images-testing/ebs/ubuntu-trusty-daily-amd64-server-20160206",
-          "provider": "EC2_AP_SOUTHEAST2",
-          "region": "EC2_AP_SOUTHEAST2",
-          "driver": "EC2APSESydneyNodeDriver"
+       {
+          "id": "ami-f6b79395",
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
         }
       ],
       "pick": "first"
@@ -19,19 +20,25 @@
         {
           "id": "m4.xlarge",
           "name": "Extra Large Instance",
-          "provider": "EC2_AP_SOUTHEAST2",
-          "region": "EC2_AP_SOUTHEAST2",
-          "driver": "EC2APSESydneyNodeDriver"
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
         }
       ]
     },
     "location": {
       "options": [
         {
-          "id": "0",
-          "region": "ap-southeast-2a",
-          "provider": "EC2_AP_SOUTHEAST2",
-          "driver": "EC2APSESydneyNodeDriver"
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2",
+            "availability_zone": {
+              "name": "ap-southeast-2a",
+              "zone_state": "available",
+              "region_name": "ap-southeast-2"
+            }
+          }
         }
       ]
     }
@@ -39,22 +46,23 @@
   "provider": {
     "options": [
       {
-        "EC2_AP_SOUTHEAST2": {
-          "auth": {
-            "key": "${env.AWS_KEY_ID}",
-            "secret": "${env.AWS_ACCESS_KEY}"
-          },
-          "ssh": {
-            "public_key_path": "${env.PUBLIC_KEY_PATH}",
-            "private_key_path": "${env.PRIVATE_KEY_PATH}",
-            "key_name": "${env.PUBLIC_KEY_NAME}"
-          },
-          "security_group": [
-            "all"
-          ],
-          "driver": "EC2APSESydneyNodeDriver",
+        "provider": {
+          "name": "EC2",
+          "region": "ap-southeast-2"
+        },
+        "auth": {
+          "key": "${env.AWS_KEY_ID}",
+          "secret": "${env.AWS_ACCESS_KEY}"
+        },
+        "ssh": {
+          "public_key_path": "${env.PUBLIC_KEY_PATH}",
+          "private_key_path": "${env.PRIVATE_KEY_PATH}",
           "key_name": "${env.PUBLIC_KEY_NAME}"
-        }
+        },
+        "security_group": [
+          "all"
+        ],
+        "key_name": "${env.PUBLIC_KEY_NAME}"
       }
     ]
   },

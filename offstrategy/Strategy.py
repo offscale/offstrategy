@@ -8,11 +8,17 @@ from libcloud.compute.base import NodeImage
 
 from offutils_strategy_register import dict_to_node, node_to_dict
 from offconf import replace_variables
-from offutils import raise_f, find_by_key, pp, lists_of_dicts_intersection_on, lists_of_dicts_intersection_on_any
+from offutils import (
+    raise_f, find_by_key, pp, lists_of_dicts_intersection_on,
+    lists_of_dicts_intersection_on_any, find_replace_many
+)
 
 
 class Strategy(object):
     image = None
+
+    # TODO: Write some regular-expressions to generate a big list of these:
+    image_name_short_map = ('Ubuntu Linux 14.04 LTS Trusty Tahr - Minimal Install (64 bit)', 'Ubuntu 14.04 x64'),
 
     def __init__(self, strategy_filename):
         with open(strategy_filename) as f:
@@ -21,6 +27,8 @@ class Strategy(object):
         self.default_pick = self.strategy['default_pick']
 
     def get_node_name(self, image_name=None):
+        """ Returns the node_name, a combination of cluster-purpose, image-name and uuid,
+            sanitised for cloud compliance """
         if type(self.image) is DictType:
             image_name = (
                 lambda n: ''.join(ch for ch in n if ch in ascii_letters)
@@ -28,11 +36,13 @@ class Strategy(object):
             )(image_name or self.image['name'])
         elif isinstance(self.image, NodeImage):
             image_name = image_name or self.image.name
-        return '{purpose}-{image}-{uuid}'.format(
+
+        return find_replace_many('{purpose}-{image}-{uuid}'.format(
             purpose='-'.join(self.strategy['purpose']),
-            image=image_name.encode('string-escape' if isinstance(image_name, str) else 'unicode-escape'),
+            image=find_replace_many(image_name, self.image_name_short_map
+                                    ).encode('string-escape' if isinstance(image_name, str) else 'unicode-escape'),
             uuid=uuid4().get_hex()
-        ).replace('/', '.').replace(' ', '')
+        ), (('/', '-'), (' ', ''), ('.', '')))
 
     def get_provider(self, offset=0):
         return self._get_next_option(self.strategy['provider'], offset)

@@ -6,7 +6,7 @@
     "image": {
       "options": [
         {
-          "id": "ami-31654752",
+          "id": "ami-2db7934e",
           "provider": {
             "name": "EC2",
             "region": "ap-southeast-2"

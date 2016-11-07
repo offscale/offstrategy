@@ -13,7 +13,7 @@ from libcloud import security
 from libcloud.compute.deployment import SSHKeyDeployment
 
 from offutils_strategy_register import save_node_info, node_to_dict
-from offutils import obj_to_d, pp, ping_port
+from offutils import obj_to_d, pp, ping_port, it_consumes
 
 from __init__ import logger
 from Strategy import Strategy
@@ -57,10 +57,8 @@ class Compute(object):
         get_option = partial(self.strategy.get_option,
                              provider_name=self.provider_dict['provider']['name'])
 
-        '''
-        pp(map(node_to_dict,
-               ifilter(lambda image: image and image.id in ('ami-90bfe4f3', 'ami-ffaef69c'), self.list_images())))
-        '''
+        '''pp(map(node_to_dict,
+              ifilter(lambda n: '14.04.5 x64' in n.id or '14.04.5 x64' in n.name, self.list_images())))'''
 
         self.node_specs = {
             'size': get_option('hardware', self.list_sizes()),
@@ -82,6 +80,8 @@ class Compute(object):
             self.node_specs.update({'ex_securitygroup': self.provider_dict['security_group']})
         if 'key_name' in self.provider_dict:
             self.node_specs.update({'ex_keyname': self.provider_dict['key_name']})
+
+        self.node_specs.update(dict((ex, val) for ex, val in self.provider_dict.iteritems() if ex.startswith('ex')))
 
     def restrategise(self):
         self.offset += 1

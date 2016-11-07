@@ -13,14 +13,7 @@
           }
         },
         {
-          "name": "Ubuntu - Latest (64 bit)",
-          "provider": {
-            "name": "SOFTLAYER",
-            "region": "syd01"
-          }
-        },
-        {
-          "name": "Ubuntu - Latest",
+          "id": "UBUNTU_14_64",
           "provider": {
             "name": "SOFTLAYER",
             "region": "syd01"

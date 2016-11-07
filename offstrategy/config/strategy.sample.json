@@ -13,21 +13,14 @@
           }
         },
         {
-          "name": "Ubuntu - Latest (64 bit)",
+          "id": "UBUNTU_14_64",
           "provider": {
             "name": "SOFTLAYER",
             "region": "syd01"
           }
         },
         {
-          "name": "Ubuntu - Latest",
-          "provider": {
-            "name": "SOFTLAYER",
-            "region": "syd01"
-          }
-        },
-        {
-          "id": "ami-31654752",
+          "id": "ami-2db7934e",
           "provider": {
             "name": "EC2",
             "region": "ap-southeast-2"
@@ -42,8 +35,8 @@
           }
         },
         {
-          "id": "17154032",
-          "name": "14.04.4 x64",
+          "id": "20422866",
+          "name": "14.04.5 x64",
           "provider": {
             "name": "DIGITAL_OCEAN",
             "region": "sgp1"
