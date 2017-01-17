@@ -45,8 +45,8 @@ class Compute(object):
     def set_node(self):
         self.provider_dict = self.strategy.get_provider(self.offset)
 
+        # region=self.provider_dict['provider']['region'],
         self.provider_cls = (lambda driver: driver(
-            region=self.provider_dict['provider']['region'],
             **self.provider_dict['auth']
         ))(get_driver(getattr(Provider, self.provider_dict['provider']['name'])))
 
@@ -57,14 +57,24 @@ class Compute(object):
         get_option = partial(self.strategy.get_option,
                              provider_name=self.provider_dict['provider']['name'])
 
-        '''pp(map(node_to_dict,
-              ifilter(lambda n: '14.04.5 x64' in n.id or '14.04.5 x64' in n.name, self.list_images())))'''
+        # pp(map(node_to_dict, ifilter(lambda n: '12.04.5 x64' in n.id + n.name, self.list_images())))
+        # pp(map(lambda n: (n.id, n.name), self.list_images()))
+        # pp(map(obj_to_d, self.list_sizes()))
 
-        self.node_specs = {
-            'size': get_option('hardware', self.list_sizes()),
-            'image': get_option('image', self.list_images()),
-            'location': get_option('location', self.list_locations())
-        }
+        try:
+            self.node_specs = {
+                'size': get_option('hardware', self.list_sizes()),
+                'image': get_option('image', self.list_images()),
+                'location': get_option('location', self.list_locations())
+            }
+        except NotImplementedError:
+            logger.warn('size/image/location not validated for Vagrant')
+            print self.provider_dict
+            self.node_specs = {
+                'size': self.provider_dict['provider']['name']['size'],
+                'image': self.provider_dict['provider']['name']['image'],
+                'location': self.provider_dict['provider']['name']['location']
+            }
 
         if 'create_with' in self.provider_dict:
             self.node_specs.update(self.provider_dict['create_with'])
@@ -127,12 +137,12 @@ class Compute(object):
             '''
         for i in xrange(len(self.strategy.strategy['provider']['options'])):  # Threshold
             logger.info('Attempting to create node "{node_name}" on: {provider}'.format(
-                node_name=self.strategy.get_node_name(), provider=self.provider_dict['provider']['name']
+                node_name=self.node_name, provider=self.provider_dict['provider']['name']
             ))
             self.provision(create_or_deploy)
 
             if self.node:
-                save_node_info(self.node_name, node_to_dict(self.node), marshall=json)
+                save_node_info(self.node.name.partition('.')[0], node_to_dict(self.node), marshall=json)
                 return self.node
             self.restrategise()
 
@@ -152,7 +162,8 @@ class Compute(object):
                 public_ssh_key = f.read()
             self.node_specs.update({'deploy': SSHKeyDeployment(public_ssh_key)})
 
-        self.node_name = self.strategy.get_node_name()
+        self.node_name = self.node_name or self.strategy.get_node_name()
+
         try:
             self.node = getattr(
                 self, '{0}_node'.format(create_or_deploy)

@@ -1,4 +1,5 @@
 from random import randint
+from socket import getfqdn
 from uuid import uuid4
 from json import loads
 from types import DictType
@@ -37,12 +38,13 @@ class Strategy(object):
         elif isinstance(self.image, NodeImage):
             image_name = image_name or self.image.name
 
-        return find_replace_many('{purpose}-{image}-{uuid}'.format(
-            purpose='-'.join(self.strategy['purpose']),
-            image=find_replace_many(image_name, self.image_name_short_map
-                                    ).encode('string-escape' if isinstance(image_name, str) else 'unicode-escape'),
-            uuid=uuid4().get_hex()
-        ), (('/', '-'), (' ', ''), ('.', '')))
+        return getfqdn('{prefix}-{uuid}'.format(
+            prefix=find_replace_many('{purpose}-{image}'.format(
+                purpose='-'.join(self.strategy['purpose']),
+                image=image_name.encode('string-escape' if isinstance(image_name, str) else 'unicode-escape')[:20],
+            ), ((' ', ''), ('.', '-'))).lower()[:32],
+            uuid=uuid4().get_hex()  # 32 chars
+        ))
 
     def get_provider(self, offset=0):
         return self._get_next_option(self.strategy['provider'], offset)

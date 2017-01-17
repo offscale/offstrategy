@@ -3,7 +3,7 @@ from functools import partial
 from argparse import ArgumentParser
 from multiprocessing import Pool
 
-from __init__ import logger
+from __init__ import logger, __version__
 from Compute import Compute
 
 config_join = partial(path.join, path.dirname(__file__), 'config')
@@ -17,6 +17,7 @@ def _build_parser():
                         default=1, type=int)
     parser.add_argument('--provider', help='Try this provider first')
     parser.add_argument('--image', help='Try this image first')
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
     return parser
 
 
