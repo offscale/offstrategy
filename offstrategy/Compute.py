@@ -162,7 +162,7 @@ class Compute(object):
                 public_ssh_key = f.read()
             self.node_specs.update({'deploy': SSHKeyDeployment(public_ssh_key)})
 
-        self.node_name = self.node_name or self.strategy.get_node_name()
+        assert self.node_name
 
         try:
             self.node = getattr(

@@ -27,13 +27,14 @@ if __name__ == '__main__':
 
     def one(*ignore):
         compute = Compute(args.strategy)
+        compute.node_name = compute.strategy.get_node_name()
         logger.info(compute.attempt_provision('create',
                                               prefer_provider=args.provider,
                                               prefer_image=args.image))
 
 
-    logger.info(('Provisioning {} node'.format(args.number_of_nodes) +
-                 's' if args.number_of_nodes > 1 else ''))
+    logger.info('Provisioning {} node{}'.format(args.number_of_nodes,
+                                                's' if args.number_of_nodes > 1 else ''))
     if args.number_of_nodes == 1:
         one()
     else:

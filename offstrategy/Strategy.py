@@ -17,6 +17,7 @@ from offutils import (
 
 class Strategy(object):
     image = None
+    image_name = None
 
     # TODO: Write some regular-expressions to generate a big list of these:
     image_name_short_map = ('Ubuntu Linux 14.04 LTS Trusty Tahr - Minimal Install (64 bit)', 'Ubuntu 14.04 x64'),
@@ -30,21 +31,30 @@ class Strategy(object):
     def get_node_name(self, image_name=None):
         """ Returns the node_name, a combination of cluster-purpose, image-name and uuid,
             sanitised for cloud compliance """
+
+        def to_name(nom):
+            nom = nom.encode(
+                'string-escape' if isinstance(self.image_name, str) else 'unicode-escape')[:20]
+
+            return getfqdn('{prefix}-{uuid}'.format(
+                prefix=find_replace_many('{purpose}-{image}'.format(
+                    purpose='-'.join(self.strategy['purpose']),
+                    image=nom,  # 20 chars
+                ), ((' ', ''), ('.', '-'))).lower()[:32],
+                uuid=uuid4().get_hex()  # 32 chars
+            ))
+
         if type(self.image) is DictType:
-            image_name = (
+            name = (
                 lambda n: ''.join(ch for ch in n if ch in ascii_letters)
                 if self.image['driver'].__name__.startswith('Azure') else n
             )(image_name or self.image['name'])
+            self.image_name = self.image['name'] = to_name(name)
         elif isinstance(self.image, NodeImage):
-            image_name = image_name or self.image.name
+            name = image_name or self.image.name
+            self.image_name = self.image.name = to_name(name)
 
-        return getfqdn('{prefix}-{uuid}'.format(
-            prefix=find_replace_many('{purpose}-{image}'.format(
-                purpose='-'.join(self.strategy['purpose']),
-                image=image_name.encode('string-escape' if isinstance(image_name, str) else 'unicode-escape')[:20],
-            ), ((' ', ''), ('.', '-'))).lower()[:32],
-            uuid=uuid4().get_hex()  # 32 chars
-        ))
+        return self.image_name
 
     def get_provider(self, offset=0):
         return self._get_next_option(self.strategy['provider'], offset)
