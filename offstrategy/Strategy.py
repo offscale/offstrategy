@@ -25,22 +25,24 @@ class Strategy(object):
     def __init__(self, strategy_filename):
         with open(strategy_filename) as f:
             strategy = replace_variables(f.read())
-        self.strategy = loads(strategy)
-        self.default_pick = self.strategy['default_pick']
+        self.strategy_dict = loads(strategy)
+        self.default_pick = self.strategy_dict['default_pick']
 
     def get_node_name(self, image_name=None):
         """ Returns the node_name, a combination of cluster-purpose, image-name and uuid,
             sanitised for cloud compliance """
 
         def to_name(nom):
+            if hasattr(nom, 'id'):
+                nom = nom.id
             nom = nom.encode(
                 'string-escape' if isinstance(self.image_name, str) else 'unicode-escape')[:20]
 
             return getfqdn('{prefix}-{uuid}'.format(
                 prefix=find_replace_many('{purpose}-{image}'.format(
-                    purpose='-'.join(self.strategy['purpose']),
+                    purpose='-'.join(self.strategy_dict['purpose']),
                     image=nom,  # 20 chars
-                ), ((' ', ''), ('.', '-'))).lower()[:32],
+                ), ((' ', ''), ('.', '-'), ('/', '-'), ('\\', '-'))).lower()[:32],
                 uuid=uuid4().get_hex()  # 32 chars
             ))
 
@@ -53,11 +55,16 @@ class Strategy(object):
         elif isinstance(self.image, NodeImage):
             name = image_name or self.image.name
             self.image_name = self.image.name = to_name(name)
+        elif self.image_name:
+            self.image_name = to_name(self.image_name)
+        else:
+            raise TypeError('Unexpected: '
+                            '`self.image = {self.image}; self.image_name = {self.image_name};`'.format(self=self))
 
         return self.image_name
 
     def get_provider(self, offset=0):
-        return self._get_next_option(self.strategy['provider'], offset)
+        return self._get_next_option(self.strategy_dict['provider'], offset)
 
     @staticmethod
     def get_location(enumerable, options):
@@ -96,7 +103,7 @@ class Strategy(object):
         result = getattr(self, 'get_{name}'.format(name=name))(
             enumerable,
             filter(lambda opt: opt['provider']['name'] == provider_name,
-                   find_by_key(self.strategy, name)['options'])
+                   find_by_key(self.strategy_dict, name)['options'])
         )
         if result:
             return dict_to_node(result) if type(result) is DictType else result
@@ -105,7 +112,7 @@ class Strategy(object):
 
     def get_key_pair(self, name, offset=0):
         print 'get_key_pair::offset =', offset
-        return self._get_next_option(self.strategy['provider'], offset)
+        return self._get_next_option(self.strategy_dict['provider'], offset)
 
     _get_next_option = lambda self, obj, offset=0: (
         lambda idx: obj['options'][offset:][idx] if (idx + offset) < len(obj['options'])

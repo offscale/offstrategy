@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
 import json
+from collections import namedtuple
 
-from os import name as os_name, environ
+from os import environ
 from functools import partial
 from itertools import imap, ifilter
 
-from libcloud.compute.base import NodeAuthPassword
+from libcloud.compute.base import NodeAuthPassword, NodeSize
 from libcloud.compute.types import Provider, LibcloudError
 from libcloud.compute.providers import get_driver
 from libcloud import security
 from libcloud.compute.deployment import SSHKeyDeployment
 
 from offutils_strategy_register import save_node_info, node_to_dict
-from offutils import obj_to_d, pp, ping_port, it_consumes
+from offutils import pp, ping_port
 
 from __init__ import logger
 from Strategy import Strategy
@@ -23,7 +24,7 @@ if environ.get('disable_ssl'):
 
 
 class Compute(object):
-    """ Light wrapper around libcloud to facilitate integration with strategy files,
+    """ Light wrapper around libcloud to facilitate integration with strategy_dict files,
         and simplification of commands """
 
     offset = 0
@@ -50,6 +51,13 @@ class Compute(object):
             **self.provider_dict['auth']
         ))(get_driver(getattr(Provider, self.provider_dict['provider']['name'])))
 
+        '''pp(map(node_to_dict, self.provider_cls.list_nodes()))
+        print '-' * 10
+        print next(node_to_dict(node) for node in self.provider_cls.list_nodes()
+                   if node.extra['ex_vagrantfile'] == '/mnt/large_linux/vagrant/ficus/Vagrantfile')
+        exit(1)
+        '''
+
         if 'http_proxy' in environ:
             self.provider_cls.connection.set_http_proxy(proxy_url=environ['http_proxy'])
 
@@ -69,17 +77,56 @@ class Compute(object):
             }
         except NotImplementedError:
             logger.warn('size/image/location not validated for Vagrant')
-            print self.provider_dict
+
+            if 'extras' not in self.strategy.strategy_dict['node']:
+                self.strategy.strategy_dict['node']['extras'] = dict(options=(self.provider_dict,))
+
+            hardware, image, extras = imap(
+                (lambda typ: next(dict(key=self.provider_dict['provider']['key'], **spec)
+                                  for spec in self.strategy.strategy_dict['node'][typ]['options']
+                                  for key in ('region', 'name')
+                                  if spec['provider'][key] == self.provider_dict['provider'][key])
+                 ), ('hardware', 'image', 'extras'))
+
+            nodesize_kwargs = {'driver': self.provider_cls}
+            nodesize_kwargs.update(**{k: v for k, v in hardware.iteritems()
+                                      if k not in frozenset(('provider', 'key', 'name'))})
+
+            if 'extra' not in nodesize_kwargs:
+                nodesize_kwargs['extra'] = {'provider': hardware['provider']['visor']}
+            else:
+                nodesize_kwargs.update(**{'extra': {'provider': hardware['provider']['visor']}})
+
+            if 'id' not in nodesize_kwargs:
+                nodesize_kwargs['id'] = hardware['key']
+            if 'name' not in nodesize_kwargs:
+                nodesize_kwargs['name'] = self.node_name
+            if nodesize_kwargs['extra'].get('memory'):
+                nodesize_kwargs['ram'] = nodesize_kwargs['extra']['memory']
+            for k in ('ram', 'disk', 'bandwidth', 'price'):
+                if k not in nodesize_kwargs:
+                    nodesize_kwargs[k] = None
+
+            nodesize_kwargs = {k: '"{}"'.format(v) if isinstance(v, basestring) and not v.isdigit() else v
+                               for k, v in nodesize_kwargs.iteritems()}
+            nodesize_kwargs['extra'] = {k: '"{}"'.format(v) if isinstance(v, basestring) and not v.isdigit() else v
+                                        for k, v in nodesize_kwargs['extra'].iteritems()}
+
             self.node_specs = {
-                'size': self.provider_dict['provider']['name']['size'],
-                'image': self.provider_dict['provider']['name']['image'],
-                'location': self.provider_dict['provider']['name']['location']
+                'size': NodeSize(**nodesize_kwargs),
+                'key': hardware['key'],
+                'ex_vagrantfile': hardware['key'],
+                'image': namedtuple('NodeImage__proxy', ('id',))(image['id']),
+                'location': hardware['provider']['region'],
+                'extras': extras
             }
+            del nodesize_kwargs
+            self.strategy.image_name = self.node_specs['image']
 
         if 'create_with' in self.provider_dict:
             self.node_specs.update(self.provider_dict['create_with'])
 
-        if 'node_password' in self.provider_dict['ssh']:
+        if 'ssh' in self.provider_dict and 'node_password' in self.provider_dict['ssh']:
             self.node_specs.update({
                 'auth': NodeAuthPassword(self.provider_dict['ssh']['node_password'])
             })
@@ -116,27 +163,27 @@ class Compute(object):
             raise EnvironmentError('etcd server not up')
 
         if prefer_provider:
-            self.strategy.strategy['provider']['options'] = (next(
+            self.strategy.strategy_dict['provider']['options'] = next(
                 ifilter(
                     lambda obj: obj.keys()[0] == prefer_provider,
-                    self.strategy.strategy['provider']['options']
+                    self.strategy.strategy_dict['provider']['options']
                 )
-            ),)
+            ),
             '''
             # Prefer syntax
-            self.strategy.strategy['provider']['options'].insert(
-                0, self.strategy.strategy['provider']['options'].pop(
+            self.strategy_dict.strategy_dict['provider']['options'].insert(
+                0, self.strategy_dict.strategy_dict['provider']['options'].pop(
                     next(
                         ifilter(
                             lambda (idx, obj): obj.keys()[0] == prefer_provider,
-                            enumerate(self.strategy.strategy['provider']['options'])
+                            enumerate(self.strategy_dict.strategy_dict['provider']['options'])
                         )
                     )[0]
                 )
             )
             '''
-        for i in xrange(len(self.strategy.strategy['provider']['options'])):  # Threshold
-            logger.info('Attempting to create node "{node_name}" on: {provider}'.format(
+        for i in xrange(len(self.strategy.strategy_dict['provider']['options'])):  # Threshold
+            logger.info('Attempting to create node {node_name!r} on: {provider!r}'.format(
                 node_name=self.node_name, provider=self.provider_dict['provider']['name']
             ))
             self.provision(create_or_deploy)
@@ -153,6 +200,10 @@ class Compute(object):
             self.setup_keypair()
         except LibcloudError as e:
             logger.warn('{cls}: {msg}'.format(cls=e.__class__.__name__, msg=e.message))
+        except KeyError as e:
+            if e.message != 'ssh':
+                raise e
+            logger.warn('SSH not setup [by us] for: {!r}'.format(self.node_name))
 
         if 'ex_securitygroup' in self.node_specs and self.provider_dict['provider']['name'].startswith('EC2'):
             print self.node_specs['ex_securitygroup']
@@ -181,9 +232,4 @@ class Compute(object):
             # logger.info('SoftLayer billing is giving error, will remove condition once resolved.')
         except LibcloudError as e:
             logger.warn('{cls}: {msg}'.format(cls=e.__class__.__name__, msg=e.message))
-        except Exception as e:
-            if e.message.startswith('InvalidGroup.NotFound'):
-                print 'InvalidGroup.NotFound'
-                exit(1)
-            else:
-                raise e
+            raise e

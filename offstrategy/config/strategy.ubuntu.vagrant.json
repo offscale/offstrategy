@@ -6,10 +6,17 @@
     "image": {
       "options": [
         {
-          "name": "Ubuntu Linux 14.04 LTS Trusty Tahr - Minimal Install (64 bit)",
+          "id": "ubuntu1604-bighd",
           "provider": {
-            "name": "SOFTLAYER",
-            "region": "syd01"
+            "name": "VAGRANT",
+            "region": null
+          }
+        },
+        {
+          "id": "ubuntu/xenial64",
+          "provider": {
+            "name": "VAGRANT",
+            "region": null
           }
         }
       ],
@@ -18,15 +25,14 @@
     "hardware": {
       "options": [
         {
-          "ram": 7168,
-          "name": "Cool specs",
+          "ram": 8192,
+          "disk": 30,
           "extra": {
-            "cores": 2,
-            "max_data_disks": 4
+            "cpus": 4
           },
-          "disk": 127,
           "provider": {
             "name": "VAGRANT",
+            "visor": "virtualbox",
             "region": null
           }
         }
@@ -42,6 +48,34 @@
           }
         }
       ]
+    },
+    "extras": {
+      "options": [
+        {
+          "first_lines": [
+            "config.vm.network :private_network, ip: '192.168.33.10'",
+            "config.hostsupdater.aliases = ['preview.localhost']",
+            ""
+          ],
+          "blocks": [
+            {
+              "name": "config.vm.provider",
+              "args": "v",
+              "func_args": "\"virtualbox\"",
+              "last_lines": [
+                "v.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']",
+                "v.customize ['modifyvm', :id, '--natdnsproxy1', 'on']",
+                "v.cpus = 4",
+                "v.memory = 8192"
+              ]
+            }
+          ],
+          "provider": {
+            "name": "VAGRANT",
+            "region": null
+          }
+        }
+      ]
     }
   },
   "provider": {
@@ -49,11 +83,11 @@
       {
         "provider": {
           "name": "VAGRANT",
-          "key": "/mnt/large_linux/vagrant/edx-fullstack/Vagrantfile",
+          "key": "/mnt/large_linux/vagrant/openedx-ficus.1rc3/Vagrantfile",
           "region": null
         },
         "auth": {
-          "ex_vagrantfile": "/mnt/large_linux/vagrant/edx-fullstack/Vagrantfile",
+          "ex_vagrantfile": "/mnt/large_linux/vagrant/openedx-ficus.1rc3/Vagrantfile",
           "key": null
         }
       }
