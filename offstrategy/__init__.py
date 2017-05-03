@@ -4,7 +4,7 @@ import logging
 from logging.config import dictConfig as _dictConfig
 
 __author__ = 'Samuel Marks'
-__version__ = '0.0.11'
+__version__ = '0.0.12-alpha'
 
 
 def _get_logger():

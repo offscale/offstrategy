@@ -83,11 +83,11 @@
       {
         "provider": {
           "name": "VAGRANT",
-          "key": "/mnt/large_linux/vagrant/openedx-ficus.1rc3/Vagrantfile",
+          "key": "/mnt/large_linux/vagrant/openedx-ficus.master/Vagrantfile",
           "region": null
         },
         "auth": {
-          "ex_vagrantfile": "/mnt/large_linux/vagrant/openedx-ficus.1rc3/Vagrantfile",
+          "ex_vagrantfile": "/mnt/large_linux/vagrant/openedx-ficus.master/Vagrantfile",
           "key": null
         }
       }

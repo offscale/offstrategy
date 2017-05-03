@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import json
+import cPickle as pickle
 from collections import namedtuple
 
-from os import environ
+from os import environ, path
 from functools import partial
 from itertools import imap, ifilter
 
@@ -13,7 +14,7 @@ from libcloud.compute.providers import get_driver
 from libcloud import security
 from libcloud.compute.deployment import SSHKeyDeployment
 
-from offutils_strategy_register import save_node_info, node_to_dict
+from offutils_strategy_register import save_node_info, node_to_dict, obj_to_d, normal_types
 from offutils import pp, ping_port
 
 from __init__ import logger
@@ -21,6 +22,12 @@ from Strategy import Strategy
 
 if environ.get('disable_ssl'):
     security.VERIFY_SSL_CERT = False
+
+NodeImage__proxy = namedtuple('NodeImage__proxy', ('id',))
+
+obj_to_san_d = lambda obj: {attr: getattr(obj, attr) for attr in dir(obj)
+                            if not attr.startswith('__') and type(getattr(obj, attr)) in normal_types
+                            and getattr(obj, attr)}
 
 
 class Compute(object):
@@ -47,14 +54,15 @@ class Compute(object):
         self.provider_dict = self.strategy.get_provider(self.offset)
 
         # region=self.provider_dict['provider']['region'],
+        # pp(self.provider_dict['auth'])
         self.provider_cls = (lambda driver: driver(
             **self.provider_dict['auth']
         ))(get_driver(getattr(Provider, self.provider_dict['provider']['name'])))
 
         '''pp(map(node_to_dict, self.provider_cls.list_nodes()))
         print '-' * 10
-        print next(node_to_dict(node) for node in self.provider_cls.list_nodes()
-                   if node.extra['ex_vagrantfile'] == '/mnt/large_linux/vagrant/ficus/Vagrantfile')
+        print next(node_to_dict(obj) for obj in self.provider_cls.list_nodes()
+                   if obj.extra['ex_vagrantfile'] == '/mnt/large_linux/vagrant/ficus/Vagrantfile')
         exit(1)
         '''
 
@@ -68,14 +76,30 @@ class Compute(object):
         # pp(map(node_to_dict, ifilter(lambda n: '12.04.5 x64' in n.id + n.name, self.list_images())))
         # pp(map(lambda n: (n.id, n.name), self.list_images()))
         # pp(map(obj_to_d, self.list_sizes()))
+        # exit(1)
 
-        try:
+        if self.provider_cls.type.startswith('azure'):
+            node_img = NodeImage__proxy(self.provider_dict['auth']['region'])
+
+            '''images = self.list_images(node_img)
+            with open('images.json', 'wt') as f:
+                print 'images =', map(obj_to_san_d, images)
+                json.dump({'images': map(obj_to_san_d, images)}, f, indent=4)'''
+
+            if path.isfile('images.pkl'):
+                with open('images.pkl', 'rt') as f:
+                    images = pickle.load(f)
+            else:
+                images = self.list_images(node_img)
+                with open('images.pkl', 'wt') as f:
+                    pickle.dump(images, f)
+
             self.node_specs = {
-                'size': get_option('hardware', self.list_sizes()),
-                'image': get_option('image', self.list_images()),
+                'size': get_option('hardware', self.list_sizes(node_img)),
+                'image': get_option('image', images),
                 'location': get_option('location', self.list_locations())
             }
-        except NotImplementedError:
+        elif self.provider_cls.type == 'Vagrant':
             logger.warn('size/image/location not validated for Vagrant')
 
             if 'extras' not in self.strategy.strategy_dict['node']:
@@ -116,12 +140,18 @@ class Compute(object):
                 'size': NodeSize(**nodesize_kwargs),
                 'key': hardware['key'],
                 'ex_vagrantfile': hardware['key'],
-                'image': namedtuple('NodeImage__proxy', ('id',))(image['id']),
+                'image': NodeImage__proxy(image['id']),
                 'location': hardware['provider']['region'],
                 'extras': extras
             }
             del nodesize_kwargs
             self.strategy.image_name = self.node_specs['image']
+        else:
+            self.node_specs = {
+                'size': get_option('hardware', self.list_sizes()),
+                'image': get_option('image', self.list_images()),
+                'location': get_option('location', self.list_locations())
+            }
 
         if 'create_with' in self.provider_dict:
             self.node_specs.update(self.provider_dict['create_with'])
@@ -206,7 +236,7 @@ class Compute(object):
             logger.warn('SSH not setup [by us] for: {!r}'.format(self.node_name))
 
         if 'ex_securitygroup' in self.node_specs and self.provider_dict['provider']['name'].startswith('EC2'):
-            print self.node_specs['ex_securitygroup']
+            print 'ex_securitygroup =', self.node_specs['ex_securitygroup']
 
         if create_or_deploy == 'deploy':
             with open(self.provider_dict['ssh']['public_key_path'], mode='rt') as f:

@@ -1,3 +1,4 @@
+from importlib import import_module
 from random import randint
 from socket import getfqdn
 from uuid import uuid4
@@ -6,6 +7,7 @@ from types import DictType
 from string import ascii_letters
 
 from libcloud.compute.base import NodeImage
+from libcloud.compute.providers import DRIVERS
 
 from offutils_strategy_register import dict_to_node, node_to_dict
 from offconf import replace_variables
@@ -25,7 +27,7 @@ class Strategy(object):
     def __init__(self, strategy_filename):
         with open(strategy_filename) as f:
             strategy = replace_variables(f.read())
-        self.strategy_dict = loads(strategy)
+        self.strategy_dict = loads(strategy, strict=False)
         self.default_pick = self.strategy_dict['default_pick']
 
     def get_node_name(self, image_name=None):
@@ -47,6 +49,9 @@ class Strategy(object):
             ))
 
         if type(self.image) is DictType:
+            if isinstance(self.image['driver'], basestring):
+                drvs = tuple(v[0] for k, v in DRIVERS.iteritems() if v[1] == self.image['driver'])
+                self.image['driver'] = getattr(import_module(drvs[0]), self.image['driver'])
             name = (
                 lambda n: ''.join(ch for ch in n if ch in ascii_letters)
                 if self.image['driver'].__name__.startswith('Azure') else n
@@ -106,6 +111,10 @@ class Strategy(object):
                    find_by_key(self.strategy_dict, name)['options'])
         )
         if result:
+            if result['driver'] == 'AzureNodeDriver':
+                # result.pop('name', None)
+                if 'get_uuid' in result and hasattr(result['get_uuid'], '__self__'):
+                    return result['get_uuid'].__self__
             return dict_to_node(result) if type(result) is DictType else result
 
         raise ValueError('Failed to set "{name}"'.format(name=name))
