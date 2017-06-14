@@ -99,6 +99,20 @@ class Compute(object):
                 'image': get_option('image', images),
                 'location': get_option('location', self.list_locations())
             }
+            if 'create_with' in self.provider_dict:
+                self.node_specs.update(self.provider_dict['create_with'])
+                if 'network' in self.provider_dict:
+                    from libcloud.compute.drivers.azure_arm import AzureSubnet
+                    subnet = AzureSubnet(id='eth0', name=self.provider_dict['network']['name'], extra=None)
+                    print 'list_nics = {};'.format(self.provider_cls.ex_list_nics(self.node_specs['ex_resource_group']))
+                    if subnet in self.provider_cls.ex_list_nics(self.node_specs['ex_resource_group']):
+                        self.node_specs['ex_network'] = subnet
+                    else:
+                        nic = self.provider_cls.ex_create_network_interface(self.provider_dict['network']['name'],
+                                                                            subnet,
+                                                                            self.node_specs['ex_resource_group'])
+                        print 'nic =', nic
+
         elif self.provider_cls.type == 'Vagrant':
             logger.warn('size/image/location not validated for Vagrant')
 

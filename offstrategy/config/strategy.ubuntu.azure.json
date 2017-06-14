@@ -16,7 +16,7 @@
           "uuid": "c0ecedfa43b044113043590f84eae9419209f75b",
           "provider": {
             "name": "AZURE_ARM",
-            "region": "Australia East"
+            "region": "Southeast Asia"
           }
         },
         {
@@ -24,7 +24,7 @@
           "name": "UbuntuServer",
           "provider": {
             "name": "AZURE_ARM",
-            "region": "Australia East"
+            "region": "Southeast Asia"
           }
         }
       ],
@@ -46,7 +46,7 @@
           "uuid": "61c55aef5d6f390f81a1b8de74092c3256ea76c1",
           "provider": {
             "name": "AZURE_ARM",
-            "region": "Australia East"
+            "region": "Southeast Asia"
           },
           "driver": "libcloud.compute.drivers.azure.AzureNodeDriver"
         },
@@ -65,7 +65,7 @@
           "uuid": "f4518d25ef077fc7a7b2f64490b6de983db0d7d8",
           "provider": {
             "name": "AZURE_ARM",
-            "region": "Australia East"
+            "region": "Southeast Asia"
           }
         }
       ]
@@ -73,13 +73,13 @@
     "location": {
       "options": [
         {
-          "country": "New South Wales, Australia",
-          "id": "australiaeast",
-          "name": "Australia East",
+          "id": "southeastasia",
+          "name": "Southeast Asia",
           "provider": {
+            "country": "Singapore",
             "name": "AZURE_ARM",
-            "id": "Australia East",
-            "region": "Australia East"
+            "id": "southeastasia",
+            "region": "Southeast Asia"
           }
         }
       ]
@@ -94,7 +94,7 @@
           "subscription_id": "${env.AZURE_SUBSCRIPTION}",
           "key": "${env.AZURE_KEY}",
           "secret": "${env.AZURE_SECRET}",
-          "region": "australiaeast"
+          "region": "Southeast Asia"
         },
         "ssh": {
           "public_key_path": "${env.PUBLIC_KEY_PATH}",
@@ -106,9 +106,13 @@
           "ex_resource_group": "${env.AZURE_CLOUD_NAME}",
           "ex_storage_account": null
         },
+        "network": {
+          "name": null,
+          "subnet": null
+        },
         "provider": {
           "name": "AZURE_ARM",
-          "region": "Australia East"
+          "region": "Southeast Asia"
         }
       }
     ]
