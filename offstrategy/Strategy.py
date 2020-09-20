@@ -3,7 +3,6 @@ from random import randint
 from socket import getfqdn
 from uuid import uuid4
 from json import loads
-from types import DictType
 from string import ascii_letters
 
 from libcloud.compute.base import NodeImage
@@ -65,7 +64,7 @@ class Strategy(object):
                 )
             )
 
-        if type(self.image) is DictType:
+        if isinstance(self.image, dict):
             if isinstance(self.image["driver"], str):
                 drvs = tuple(
                     v[0]
@@ -180,7 +179,7 @@ class Strategy(object):
                 # result.pop('name', None)
                 if "get_uuid" in result and hasattr(result["get_uuid"], "__self__"):
                     return result["get_uuid"].__self__
-            return dict_to_node(result) if type(result) is DictType else result
+            return dict_to_node(result) if isinstance(result, dict) else result
 
         raise ValueError('Failed to set "{name}"'.format(name=name))
 

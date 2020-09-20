@@ -273,11 +273,9 @@ class Compute(object):
         if prefer_provider:
             self.strategy.strategy_dict["provider"]["options"] = (
                 next(
-                    [
-                        obj
-                        for obj in self.strategy.strategy_dict["provider"]["options"]
-                        if list(obj.keys())[0] == prefer_provider
-                    ]
+                    obj
+                    for obj in self.strategy.strategy_dict["provider"]["options"]
+                    if list(obj.keys())[0] == prefer_provider
                 ),
             )
             """

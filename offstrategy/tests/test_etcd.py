@@ -2,16 +2,29 @@ from unittest import TestCase, main as unittest_main
 
 from libcloud.compute.drivers.dummy import DummyNodeDriver
 
-from etcd import EtcdKeyNotFound, EtcdResult
-from etcd.tests.unit.test_request import TestClientApiBase
+import etcd3
 from http.client import HTTPException
 
 from offutils_strategy_register import save_node_info, get_node_info  # , del_node_info
 from offutils import obj_to_d, pp, ping_port, raise_f
 
+from libcloud.compute.base import NodeImage, NodeDriver, NodeSize
 
-class TestEtcdNodeRavel(TestClientApiBase):
-    node = DummyNodeDriver("").create_node()
+
+class TestEtcdNodeRavel(TestCase):
+    node = DummyNodeDriver("").create_node(
+        image=NodeImage(driver=NodeDriver(key=""), id="", name=""),
+        name="",
+        size=NodeSize(
+            bandwidth=None,
+            disk=0,
+            driver=NodeDriver(key=""),
+            id="",
+            name="",
+            price=0.0,
+            ram=0,
+        ),
+    )
 
     @classmethod
     def setUpClass(cls):
