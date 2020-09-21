@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import json
 import pickle as pickle
 from collections import namedtuple
@@ -7,6 +9,7 @@ from collections import namedtuple
 from os import environ, path
 from functools import partial
 from sys import version
+
 if version[0] == "2":
     from itertools import imap as map
 
@@ -124,13 +127,11 @@ class Compute(object):
                         extra=None,
                     )
                     print(
-                        (
                             "list_nics = {};".format(
                                 self.provider_cls.ex_list_nics(
                                     self.node_specs["ex_resource_group"]
                                 )
                             )
-                        )
                     )
                     if subnet in self.provider_cls.ex_list_nics(
                         self.node_specs["ex_resource_group"]
@@ -142,7 +143,7 @@ class Compute(object):
                             subnet,
                             self.node_specs["ex_resource_group"],
                         )
-                        print(("nic =", nic))
+                        print("nic =", nic)
 
         elif self.provider_cls.type == "Vagrant":
             logger.warn("size/image/location not validated for Vagrant")
@@ -329,7 +330,7 @@ class Compute(object):
         if "ex_securitygroup" in self.node_specs and self.provider_dict["provider"][
             "name"
         ].startswith("EC2"):
-            print(("ex_securitygroup =", self.node_specs["ex_securitygroup"]))
+            print("ex_securitygroup =", self.node_specs["ex_securitygroup"])
 
         if create_or_deploy == "deploy":
             with open(self.provider_dict["ssh"]["public_key_path"], mode="rt") as f:

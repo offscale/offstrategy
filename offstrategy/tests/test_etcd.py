@@ -1,9 +1,14 @@
+from __future__ import print_function
+
+from sys import version
 from unittest import TestCase, main as unittest_main
 
 from libcloud.compute.drivers.dummy import DummyNodeDriver
 
-import etcd3
-from http.client import HTTPException
+if version[0] == "2":
+    from httplib import HTTPException
+else:
+    from http.client import HTTPException
 
 from offutils_strategy_register import save_node_info, get_node_info  # , del_node_info
 from offutils import obj_to_d, pp, ping_port, raise_f
@@ -75,7 +80,7 @@ class TestEtcdNodeRavel(TestCase):
             self.assertEqual(getattr(self.node, attr), getattr(result, attr))
 
     def _test_2_del(self):
-        print((del_node_info(self.node.name)._prev_node))
+        print(del_node_info(self.node.name)._prev_node)
 
         self.assertEqual(
             del_node_info(self.node.name).key,

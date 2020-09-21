@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from importlib import import_module
 from random import randint
 from socket import getfqdn
@@ -188,7 +190,7 @@ class Strategy(object):
         raise ValueError('Failed to set "{name}"'.format(name=name))
 
     def get_key_pair(self, name, offset=0):
-        print(("get_key_pair::offset =", offset))
+        print("get_key_pair::offset =", offset)
         return self._get_next_option(self.strategy_dict["provider"], offset)
 
     _get_next_option = lambda self, obj, offset=0: (

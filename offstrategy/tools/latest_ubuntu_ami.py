@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+
+from __future__ import print_function
 from sys import version
 
-if version[0] == '2':
+if version[0] == "2":
     from urllib import urlopen
 else:
     from urllib.request import urlopen
@@ -24,10 +26,8 @@ def get_ubuntu_ami(
         .replace(" ", "")
     )
     print(
-        (
-            "http://cloud-images.ubuntu.com/{codename}/{version}/".format(
-                codename=codename, version=version
-            )
+        "http://cloud-images.ubuntu.com/{codename}/{version}/".format(
+            codename=codename, version=version
         )
     )
     find = """<tr>
@@ -44,4 +44,4 @@ def get_ubuntu_ami(
 
 
 if __name__ == "__main__":
-    print((get_ubuntu_ami()))
+    print(get_ubuntu_ami())
