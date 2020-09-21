@@ -4,6 +4,10 @@ from socket import getfqdn
 from uuid import uuid4
 from json import loads
 from string import ascii_letters
+from sys import version
+
+if version[0] == "2":
+    from itertools import imap as map
 
 from libcloud.compute.base import NodeImage
 from libcloud.compute.providers import DRIVERS

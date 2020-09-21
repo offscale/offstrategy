@@ -1,5 +1,8 @@
 from unittest import TestCase, main as unittest_main
 from os import environ
+from sys import version
+if version[0] == "2":
+    from itertools import imap as map
 
 from offstrategy.parser.env import parse_out_env
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+from sys import version
 
-import urllib.request, urllib.error, urllib.parse
+if version[0] == '2':
+    from urllib import urlopen
+else:
+    from urllib.request import urlopen
 
 
 def get_ubuntu_ami(
@@ -11,7 +15,7 @@ def get_ubuntu_ami(
     version="current",
 ):
     s = (
-        urllib.request.urlopen(
+        urlopen(
             "http://cloud-images.ubuntu.com/{codename}/{version}/".format(
                 codename=codename, version=version
             )

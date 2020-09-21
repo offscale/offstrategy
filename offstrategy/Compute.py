@@ -6,6 +6,9 @@ from collections import namedtuple
 
 from os import environ, path
 from functools import partial
+from sys import version
+if version[0] == "2":
+    from itertools import imap as map
 
 
 from libcloud.compute.base import NodeAuthPassword, NodeSize
