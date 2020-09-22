@@ -10,6 +10,8 @@ from os import environ, path
 from functools import partial
 from sys import version
 
+from offutils.util import iteritems, iterkeys
+
 if version[0] == "2":
     from itertools import imap as map
 
@@ -127,11 +129,11 @@ class Compute(object):
                         extra=None,
                     )
                     print(
-                            "list_nics = {};".format(
-                                self.provider_cls.ex_list_nics(
-                                    self.node_specs["ex_resource_group"]
-                                )
+                        "list_nics = {};".format(
+                            self.provider_cls.ex_list_nics(
+                                self.node_specs["ex_resource_group"]
                             )
+                        )
                     )
                     if subnet in self.provider_cls.ex_list_nics(
                         self.node_specs["ex_resource_group"]
@@ -174,7 +176,7 @@ class Compute(object):
             nodesize_kwargs.update(
                 **{
                     k: v
-                    for k, v in list(hardware.items())
+                    for k, v in iteritems(hardware)
                     if k not in frozenset(("provider", "key", "name"))
                 }
             )
@@ -198,11 +200,11 @@ class Compute(object):
 
             nodesize_kwargs = {
                 k: '"{}"'.format(v) if isinstance(v, str) and not v.isdigit() else v
-                for k, v in list(nodesize_kwargs.items())
+                for k, v in iteritems(nodesize_kwargs)
             }
             nodesize_kwargs["extra"] = {
                 k: '"{}"'.format(v) if isinstance(v, str) and not v.isdigit() else v
-                for k, v in list(nodesize_kwargs["extra"].items())
+                for k, v in iteritems(nodesize_kwargs["extra"])
             }
 
             self.node_specs = {
@@ -242,7 +244,7 @@ class Compute(object):
         self.node_specs.update(
             dict(
                 (ex, val)
-                for ex, val in list(self.provider_dict.items())
+                for ex, val in iteritems(self.provider_dict)
                 if ex.startswith("ex")
             )
         )
@@ -279,7 +281,7 @@ class Compute(object):
                 next(
                     obj
                     for obj in self.strategy.strategy_dict["provider"]["options"]
-                    if list(obj.keys())[0] == prefer_provider
+                    if sorted(iterkeys(obj))[0] == prefer_provider
                 ),
             )
             """
@@ -288,7 +290,7 @@ class Compute(object):
                 0, self.strategy_dict.strategy_dict['provider']['options'].pop(
                     next(
                         ifilter(
-                            lambda (idx, obj): obj.keys()[0] == prefer_provider,
+                            lambda (idx, obj): sorted(iterkeys(obj))[0] == prefer_provider,
                             enumerate(self.strategy_dict.strategy_dict['provider']['options'])
                         )
                     )[0]

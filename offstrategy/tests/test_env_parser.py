@@ -1,3 +1,4 @@
+from collections import deque
 from unittest import TestCase, main as unittest_main
 from os import environ
 from sys import version
@@ -21,13 +22,14 @@ class TestParseEnv(TestCase):
             "",
             "env.",
         )
-        list(
+        deque(
             map(
                 lambda input_s: self.assertEqual(
                     parse_out_env(input_s), input_s.replace("env.bar", environ["bar"])
                 ),
                 input_strings,
-            )
+            ),
+            maxlen=0,
         )
 
     def test_env_edge_case(self):

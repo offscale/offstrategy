@@ -8,6 +8,8 @@ from json import loads
 from string import ascii_letters
 from sys import version
 
+from offutils.util import iteritems
+
 if version[0] == "2":
     from itertools import imap as map
 
@@ -73,9 +75,7 @@ class Strategy(object):
         if isinstance(self.image, dict):
             if isinstance(self.image["driver"], str):
                 drvs = tuple(
-                    v[0]
-                    for k, v in list(DRIVERS.items())
-                    if v[1] == self.image["driver"]
+                    v[0] for k, v in iteritems(DRIVERS) if v[1] == self.image["driver"]
                 )
                 self.image["driver"] = getattr(
                     import_module(drvs[0]), self.image["driver"]
