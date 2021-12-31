@@ -1,8 +1,8 @@
-from os import path
 from argparse import ArgumentParser
 from multiprocessing import Pool
+from os import path
 
-from .__init__ import logger, __version__
+from .__init__ import __version__, logger
 from .Compute import Compute
 
 

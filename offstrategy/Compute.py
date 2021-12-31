@@ -5,9 +5,8 @@ from __future__ import print_function
 import json
 import pickle as pickle
 from collections import namedtuple
-
-from os import environ, path
 from functools import partial
+from os import environ, path
 from sys import version
 
 from offutils.util import iteritems, iterkeys
@@ -15,20 +14,13 @@ from offutils.util import iteritems, iterkeys
 if version[0] == "2":
     from itertools import imap as map
 
-
-from libcloud.compute.base import NodeAuthPassword, NodeSize
-from libcloud.compute.types import Provider, LibcloudError
-from libcloud.compute.providers import get_driver
 from libcloud import security
+from libcloud.compute.base import NodeAuthPassword, NodeSize
 from libcloud.compute.deployment import SSHKeyDeployment
-
-from offutils_strategy_register import (
-    save_node_info,
-    node_to_dict,
-    obj_to_d,
-    normal_types,
-)
-from offutils import pp, ping_port
+from libcloud.compute.providers import get_driver
+from libcloud.compute.types import LibcloudError, Provider
+from offutils import ping_port, pp
+from offutils_strategy_register import node_to_dict, normal_types, save_node_info
 
 from .__init__ import logger
 from .Strategy import Strategy

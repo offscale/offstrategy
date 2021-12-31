@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
 from sys import version
 
 if version[0] == "2":

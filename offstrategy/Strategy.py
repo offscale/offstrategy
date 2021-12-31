@@ -1,12 +1,12 @@
 from __future__ import print_function
 
 from importlib import import_module
+from json import loads
 from random import randint
 from socket import getfqdn
-from uuid import uuid4
-from json import loads
 from string import ascii_letters
 from sys import version
+from uuid import uuid4
 
 from offutils.util import iteritems
 
@@ -15,17 +15,15 @@ if version[0] == "2":
 
 from libcloud.compute.base import NodeImage
 from libcloud.compute.providers import DRIVERS
-
-from offutils_strategy_register import dict_to_node, node_to_dict
 from offconf import replace_variables
 from offutils import (
-    raise_f,
     find_by_key,
-    pp,
+    find_replace_many,
     lists_of_dicts_intersection_on,
     lists_of_dicts_intersection_on_any,
-    find_replace_many,
+    raise_f,
 )
+from offutils_strategy_register import dict_to_node, node_to_dict
 
 
 class Strategy(object):

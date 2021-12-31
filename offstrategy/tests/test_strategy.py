@@ -1,6 +1,6 @@
-from unittest import TestCase, main as unittest_main
-from json import dumps
 from os import path
+from unittest import TestCase
+from unittest import main as unittest_main
 
 from offstrategy.Strategy import Strategy
 

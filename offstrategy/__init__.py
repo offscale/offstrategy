@@ -1,7 +1,8 @@
-from os import path
-import yaml
 import logging
 from logging.config import dictConfig as _dictConfig
+from os import path
+
+import yaml
 
 __author__ = "Samuel Marks"
 __version__ = "0.0.12-alpha2"

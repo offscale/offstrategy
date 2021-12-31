@@ -1,7 +1,8 @@
 from __future__ import print_function
 
 from sys import version
-from unittest import TestCase, main as unittest_main
+from unittest import TestCase
+from unittest import main as unittest_main
 
 from libcloud.compute.drivers.dummy import DummyNodeDriver
 
@@ -10,10 +11,9 @@ if version[0] == "2":
 else:
     from http.client import HTTPException
 
-from offutils_strategy_register import save_node_info, get_node_info  # , del_node_info
-from offutils import obj_to_d, pp, ping_port, raise_f
-
-from libcloud.compute.base import NodeImage, NodeDriver, NodeSize
+from libcloud.compute.base import NodeDriver, NodeImage, NodeSize
+from offutils import ping_port, raise_f
+from offutils_strategy_register import get_node_info, save_node_info  # , del_node_info
 
 
 class TestEtcdNodeRavel(TestCase):
@@ -46,7 +46,7 @@ class TestEtcdNodeRavel(TestCase):
         self.assertIsNotNone(save_node_info(self.node.name, self.node))
 
     def test_newkey(self):
-        """ Can set a new value """
+        """Can set a new value"""
         d = {
             "action": "set",
             "node": {
@@ -92,7 +92,7 @@ class TestEtcdNodeRavel(TestCase):
         error = False
         try:
             # del_node_info(cls.node.name)
-            ""
+            """"""
         except EtcdKeyNotFound:
             error = True
         if not error:
