@@ -1,10 +1,12 @@
 from __future__ import print_function
 
+import json
 from sys import version
 from unittest import TestCase
 from unittest import main as unittest_main
 
-from libcloud.compute.drivers.dummy import DummyNodeDriver
+from etcd3 import client
+from six import u, b
 
 if version[0] == "2":
     from httplib import HTTPException
@@ -12,8 +14,15 @@ else:
     from http.client import HTTPException
 
 from libcloud.compute.base import NodeDriver, NodeImage, NodeSize
-from offutils import ping_port, raise_f
-from offutils_strategy_register import get_node_info, save_node_info  # , del_node_info
+from libcloud.compute.drivers.dummy import DummyNodeDriver
+from offutils import ping_port, pp, raise_f
+from offutils_strategy_register import (
+    del_node_info,
+    dict_to_node,
+    get_node_info,
+    node_to_dict,
+    save_node_info,
+)
 
 
 class TestEtcdNodeRavel(TestCase):
@@ -41,47 +50,61 @@ class TestEtcdNodeRavel(TestCase):
                 HTTPException, "Failed to connect to etcd, errno: {}".format(res)
             )
         )(ping_port(port=2379))
+        cls.client = client(port=2379)
 
     def test_0_put(self):
+        """Can set an initial value"""
         self.assertIsNotNone(save_node_info(self.node.name, self.node))
 
     def test_newkey(self):
-        """Can set a new value"""
+        """Can set a new value. Sanity check of the internal client library."""
         d = {
             "action": "set",
             "node": {
                 "expiration": "2013-09-14T00:56:59.316195568+02:00",
                 "modifiedIndex": 183,
-                "key": "/testkey",
+                "key": u("/testkey"),
                 "ttl": 19,
-                "value": "test",
+                "value": "test0",
             },
         }
 
-        self._mock_api(201, d)
-        res = self.client.write(d["node"]["key"], d["node"]["value"])
-        d["node"]["newKey"] = True
-        self.assertEqual(res, EtcdResult(**d))
+        res = self.client.put(d["node"]["key"], d["node"]["value"])
+        zeroth = res.header.revision
+        d["node"]["value"] = "test1"
+        res = self.client.put(d["node"]["key"], d["node"]["value"])
+        self.assertEqual(zeroth + 1, res.header.revision)
+        self.assertEqual(self.client.get(d["node"]["key"])[0], b(d["node"]["value"]))
 
     def test_1_get(self):
-        result = get_node_info(self.node.name)
-        # self.assertEqual checks memory location, like `('foo',) is ('foo',)`
-        # and `self.assertTrue(self.node == result)` also fails.
-        for attr in dir(self.node):
-            if attr.startswith("_") or attr in (
-                "destroy",
-                "driver",
-                "get_uuid",
-                "image",
-                "reboot",
-                "size",
-            ):
-                continue
-            self.assertEqual(getattr(self.node, attr), getattr(result, attr))
+        save_node_info(self.node.name, node_to_dict(self.node), marshall=json)
+        res_node_d = get_node_info(self.node.name, marshall=json)
+        res_node_d.update(
+            {
+                "driver_cls": DummyNodeDriver,
+                "_class": "DummyNodeDriver",
+                "extra": {"provider": "DummyNodeDriver"},
+            }
+        )
+        s = {
+            "driver": "DummyNodeDriver",
+            "extra": {},
+            "id": "3",
+            "name": "dummy-3",
+            "private_ips": [],
+            "public_ips": ["127.0.0.3"],
+            "state": "running",
+        }
+        result = dict_to_node(res_node_d)
+        self.assertDictEqual(node_to_dict(result), {'driver': 'DummyNodeDriver',
+                                      'extra': {},
+                                      'id': '3',
+                                      'name': 'dummy-3',
+                                      'private_ips': [],
+                                      'public_ips': ['127.0.0.3'],
+                                      'state': "running"})
 
     def _test_2_del(self):
-        print(del_node_info(self.node.name)._prev_node)
-
         self.assertEqual(
             del_node_info(self.node.name).key,
             "/{key}".format(key="/".join(("unclustered", self.node.name))),
@@ -89,14 +112,7 @@ class TestEtcdNodeRavel(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        error = False
-        try:
-            # del_node_info(cls.node.name)
-            """"""
-        except EtcdKeyNotFound:
-            error = True
-        if not error:
-            pass  # raise AssertionError('test_2_del failed to remove key')
+        assert del_node_info(cls.node.name) is True
 
 
 if __name__ == "__main__":
