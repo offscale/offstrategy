@@ -7,6 +7,12 @@ from .Compute import Compute
 
 
 def _build_parser():
+    """
+    CLI parser builder using builtin `argparse` module
+
+    :returns: instanceof ArgumentParser
+    :rtype: ```ArgumentParser```
+    """
     parser = ArgumentParser(description="Create compute nodes")
     parser.add_argument(
         "-s",

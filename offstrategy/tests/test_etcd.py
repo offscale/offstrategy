@@ -6,7 +6,7 @@ from unittest import TestCase
 from unittest import main as unittest_main
 
 from etcd3 import client
-from six import u, b
+from six import b, u
 
 if version[0] == "2":
     from httplib import HTTPException
@@ -15,7 +15,7 @@ else:
 
 from libcloud.compute.base import NodeDriver, NodeImage, NodeSize
 from libcloud.compute.drivers.dummy import DummyNodeDriver
-from offutils import ping_port, pp, raise_f
+from offutils import ping_port, raise_f
 from offutils_strategy_register import (
     del_node_info,
     dict_to_node,
@@ -96,13 +96,18 @@ class TestEtcdNodeRavel(TestCase):
             "state": "running",
         }
         result = dict_to_node(res_node_d)
-        self.assertDictEqual(node_to_dict(result), {'driver': 'DummyNodeDriver',
-                                      'extra': {},
-                                      'id': '3',
-                                      'name': 'dummy-3',
-                                      'private_ips': [],
-                                      'public_ips': ['127.0.0.3'],
-                                      'state': "running"})
+        self.assertDictEqual(
+            node_to_dict(result),
+            {
+                "driver": "DummyNodeDriver",
+                "extra": {},
+                "id": "3",
+                "name": "dummy-3",
+                "private_ips": [],
+                "public_ips": ["127.0.0.3"],
+                "state": "running",
+            },
+        )
 
     def _test_2_del(self):
         self.assertEqual(
