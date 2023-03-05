@@ -15,7 +15,7 @@ if version[0] == "2":
 
 from libcloud.compute.base import NodeImage
 from libcloud.compute.providers import DRIVERS
-from offconf import replace_variables
+from offconf import parse
 from offutils import (
     find_by_key,
     find_replace_many,
@@ -40,7 +40,7 @@ class Strategy(object):
 
     def __init__(self, strategy_filename):
         with open(strategy_filename) as f:
-            strategy = replace_variables(f.read())
+            strategy = parse(f.read())
         self.strategy_dict = loads(strategy, strict=False)
         self.default_pick = self.strategy_dict["default_pick"]
 
@@ -106,7 +106,7 @@ class Strategy(object):
     def get_location(enumerable, options):
         options1 = [
             _f
-            for _f in [
+            for _f in (
                 {
                     "name": provider_dict["provider"]["region"],
                     "region_name": provider_dict["provider"]["region"],
@@ -117,7 +117,7 @@ class Strategy(object):
                 if "region" in provider_dict.get("provider", frozenset())
                 else None
                 for provider_dict in options
-            ]
+            )
             if _f
         ]
 
