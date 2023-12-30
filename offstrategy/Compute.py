@@ -14,7 +14,7 @@ from offutils.util import iteritems, iterkeys
 if version[0] == "2":
     from itertools import imap as map
 
-from libcloud import DriverType, security
+from libcloud import security
 from libcloud.compute.base import NodeAuthPassword, NodeSize
 from libcloud.compute.deployment import SSHKeyDeployment
 from libcloud.compute.providers import get_driver
@@ -63,10 +63,23 @@ class Compute(object):
         self.provider_dict = self.strategy.get_provider(self.offset)
 
         # region=self.provider_dict['provider']['region'],
-        # pp(self.provider_dict['auth'])
-        self.provider_cls = (
-            lambda driver: driver(DriverType.COMPUTE, **self.provider_dict["auth"])
-        )(get_driver(getattr(Provider, self.provider_dict["provider"]["name"])))
+        pp(self.provider_dict["auth"])
+
+        if (
+            self.provider_dict["provider"]["name"] == "GCE"
+            and "client_id" in self.provider_dict["auth"]
+            and "user_id" not in self.provider_dict["auth"]
+        ):
+            self.provider_dict["auth"].update(
+                {
+                    "user_id": "",
+                }
+            )  # "key": ""})
+
+        pp(self.provider_dict["auth"])
+        self.provider_cls = (lambda driver: driver(**self.provider_dict["auth"]))(
+            get_driver(getattr(Provider, self.provider_dict["provider"]["name"]))
+        )
 
         """pp(map(node_to_dict, self.provider_cls.list_nodes()))
         print '-' * 10

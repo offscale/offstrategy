@@ -1,0 +1,80 @@
+{
+  "name": "Default",
+  "description": "Google Cloud provisioning strategy",
+  "version": "0.0.1",
+  "node": {
+    "image": {
+      "options": [
+        {
+          "id": "ami-2db7934e",
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
+        }
+      ],
+      "pick": "first"
+    },
+    "hardware": {
+      "options": [
+        {
+          "id": "e2-highcpu-32",
+          "name": "Micro Instance",
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2"
+          }
+        }
+      ]
+    },
+    "location": {
+      "options": [
+        {
+          "provider": {
+            "name": "EC2",
+            "region": "ap-southeast-2",
+            "availability_zone": {
+              "name": "ap-southeast-2a",
+              "zone_state": "available",
+              "region_name": "ap-southeast-2"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "provider": {
+    "options": [
+      {
+        "provider": {
+          "name": "GCE",
+          "datacenter": "us-central1-a"
+        },
+        "auth": {
+          "credential_file": "${env.GOOGLE_CLOUD_CREDENTIAL_FILE}",
+          "client_id": "32555940559.apps.googleusercontent.com",
+          "client_secret": "ZmssLNjJy2998hD4CTg2ejr2",
+          "project": "${env.GOOGLE_CLOUD_PROJECT_ID}"
+        },
+        "ssh": {
+          "public_key_path": "${env.PUBLIC_KEY_PATH}",
+          "private_key_path": "${env.PRIVATE_KEY_PATH}",
+          "key_name": "${env.PUBLIC_KEY_NAME}"
+        },
+        "security_group": [
+          "all"
+        ],
+        "key_name": "${env.PUBLIC_KEY_NAME}"
+      }
+    ]
+  },
+  "_comments": [
+    "The public key and private key above are from",
+    "https://github.com/GoogleCloudPlatform/gsutil/blob/01044a9/gslib/utils/system_util.py#L174-L193"
+  ],
+  "purpose": [
+    "any-cluster"
+  ],
+  "etcd_server": "http://localhost:2379",
+  "default_pick": "first"
+}

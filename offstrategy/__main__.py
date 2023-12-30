@@ -10,7 +10,7 @@ def _build_parser():
     """
     CLI parser builder using builtin `argparse` module
 
-    :returns: instanceof ArgumentParser
+    :return: instanceof ArgumentParser
     :rtype: ```ArgumentParser```
     """
     parser = ArgumentParser(description="Create compute nodes")
