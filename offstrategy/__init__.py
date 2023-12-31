@@ -6,6 +6,7 @@ import yaml
 
 __author__ = "Samuel Marks"
 __version__ = "0.0.12-alpha4"
+__description__ = "Configuration based provisioning tool with Apache Libcloud"
 
 
 def get_logger(name=None):
