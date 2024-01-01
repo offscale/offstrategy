@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # TODO: Generate JSON-schema to validate strategy files
 
