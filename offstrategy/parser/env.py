@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from functools import reduce
 from os import environ
 from string import ascii_letters, digits, punctuation, whitespace
